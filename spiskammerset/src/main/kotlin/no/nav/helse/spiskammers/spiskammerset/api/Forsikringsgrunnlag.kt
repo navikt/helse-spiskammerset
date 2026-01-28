@@ -35,7 +35,8 @@ internal fun Route.forsikring(dao: ForsikringDao) {
     }
 
     get("/forsikring/{behandlingId}") {
-        val behandlingId = UUID.fromString(call.parameters["behandlingId"])
+        val behandlingId = call.parameters["behandlingId"]?.let { UUID.fromString(it) }
+            ?: return@get call.respond(HttpStatusCode.BadRequest, "Missing or invalid behandlingId")
         val forsikringer = dao.hentAlle(behandlingId)
         call.respond(HttpStatusCode.OK, forsikringer)
     }
