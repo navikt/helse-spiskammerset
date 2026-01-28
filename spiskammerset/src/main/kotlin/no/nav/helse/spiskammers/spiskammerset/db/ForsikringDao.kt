@@ -47,4 +47,25 @@ internal class ForsikringDao(private val dataSource: DataSource) {
             )
         }
     }
+
+    internal fun hentAlle(behandlingId: UUID): List<Forsikringsgrunnlag> {
+        @Language("PostgreSQL")
+        val query =
+            """ SELECT hendelse_id, behandling_id, dekningsgrad, nav_overtar_ansvar_for_ventetid FROM forsikring WHERE behandling_id=? """
+        sessionOf(dataSource).use { session ->
+            return session.run(
+                queryOf(
+                    query,
+                    behandlingId
+                ).map {
+                    Forsikringsgrunnlag(
+                        it.uuid("hendelse_id"),
+                        it.uuid("behandling_id"),
+                        it.int("dekningsgrad"),
+                        it.boolean("nav_overtar_ansvar_for_ventetid")
+                    )
+                }.asList
+            )
+        }
+    }
 }

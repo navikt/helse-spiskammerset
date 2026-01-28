@@ -33,6 +33,13 @@ internal fun Route.forsikring(dao: ForsikringDao) {
         dao.lagre(forsikringsgrunnlag = forsikring)
         call.respondJson("", Created)
     }
+
+    get("/forsikring/{behandlingId}") {
+        val behandlingId = call.parameters["behandlingId"]?.let { UUID.fromString(it) }
+            ?: return@get call.respond(HttpStatusCode.BadRequest, "Missing or invalid behandlingId")
+        val forsikringer = dao.hentAlle(behandlingId)
+        call.respond(HttpStatusCode.OK, forsikringer)
+    }
 }
 
 data class Forsikringsgrunnlag(val hendelseId: UUID, val behandlingId: UUID, val dekningsgrad: Int, val navOvertarAnsvarForVentetid: Boolean)

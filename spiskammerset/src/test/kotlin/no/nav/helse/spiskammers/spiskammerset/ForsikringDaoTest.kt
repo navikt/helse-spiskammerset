@@ -20,4 +20,22 @@ internal class ForsikringDaoTest {
 
         assertEquals(forsikring, lagretForsikring)
     }
+
+    @Test
+    fun `henter alle forsikringer for en behandling`() = databaseTest {
+        val forsikringDao = ForsikringDao(it)
+        val behandlingId = UUID.randomUUID()
+        val forsikring1 = Forsikringsgrunnlag(UUID.randomUUID(), behandlingId, 80, true)
+        val forsikring2 = Forsikringsgrunnlag(UUID.randomUUID(), behandlingId, 100, false)
+        val forsikring3 = Forsikringsgrunnlag(UUID.randomUUID(), UUID.randomUUID(), 50, true)
+
+        forsikringDao.lagre(forsikring1)
+        forsikringDao.lagre(forsikring2)
+        forsikringDao.lagre(forsikring3)
+
+        val hentetForsikringer = forsikringDao.hentAlle(behandlingId)
+
+        assertEquals(2, hentetForsikringer.size)
+        assertEquals(setOf(forsikring1, forsikring2), hentetForsikringer.toSet())
+    }
 }
