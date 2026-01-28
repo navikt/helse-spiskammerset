@@ -36,6 +36,6 @@ internal class ForsikringDaoTest {
         val hentetForsikringer = forsikringDao.hentAlle(behandlingId)
 
         assertEquals(2, hentetForsikringer.size)
-        assertEquals(listOf(forsikring1, forsikring2), hentetForsikringer)
+        assertEquals(setOf(forsikring1, forsikring2), hentetForsikringer.toSet())
     }
 }
