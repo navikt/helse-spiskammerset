@@ -1,4 +1,4 @@
-package no.nav.helse.spiskammers.spiskammerset
+package no.nav.helse.spiskammerset.spiskammerset
 
 import com.auth0.jwk.JwkProvider
 import io.ktor.server.auth.*

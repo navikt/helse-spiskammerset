@@ -1,7 +1,7 @@
-package no.nav.helse.spiskammers.spiskammerset
+package no.nav.helse.spiskammerset.spiskammerset
 
-import no.nav.helse.spiskammers.spiskammerset.api.Forsikringsgrunnlag
-import no.nav.helse.spiskammers.spiskammerset.db.ForsikringDao
+import no.nav.helse.spiskammerset.spiskammerset.api.Forsikringsgrunnlag
+import no.nav.helse.spiskammerset.spiskammerset.db.ForsikringDao
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.util.*

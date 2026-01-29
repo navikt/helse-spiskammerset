@@ -1,4 +1,4 @@
-package no.nav.helse.spiskammers.mottak
+package no.nav.helse.spiskammerset.mottak
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper

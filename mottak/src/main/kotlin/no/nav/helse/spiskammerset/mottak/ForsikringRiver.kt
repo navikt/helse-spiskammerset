@@ -1,4 +1,4 @@
-package no.nav.helse.spiskammers.mottak
+package no.nav.helse.spiskammerset.mottak
 
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River

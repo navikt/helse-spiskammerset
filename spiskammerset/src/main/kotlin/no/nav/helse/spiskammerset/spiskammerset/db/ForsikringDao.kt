@@ -1,8 +1,8 @@
-package no.nav.helse.spiskammers.spiskammerset.db
+package no.nav.helse.spiskammerset.spiskammerset.db
 
 import kotliquery.queryOf
 import kotliquery.sessionOf
-import no.nav.helse.spiskammers.spiskammerset.api.Forsikringsgrunnlag
+import no.nav.helse.spiskammerset.spiskammerset.api.Forsikringsgrunnlag
 import org.intellij.lang.annotations.Language
 import java.util.*
 import javax.sql.DataSource

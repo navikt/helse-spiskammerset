@@ -1,4 +1,4 @@
-package no.nav.helse.spiskammers.spiskammerset.api
+package no.nav.helse.spiskammerset.spiskammerset.api
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.http.*
@@ -8,7 +8,7 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import no.nav.helse.spiskammers.spiskammerset.db.ForsikringDao
+import no.nav.helse.spiskammerset.spiskammerset.db.ForsikringDao
 import org.intellij.lang.annotations.Language
 import java.util.*
 

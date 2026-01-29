@@ -1,3 +1,3 @@
-rootProject.name = "spiskammers"
+rootProject.name = "spiskammerset"
 
 include("spiskammerset", "mottak")

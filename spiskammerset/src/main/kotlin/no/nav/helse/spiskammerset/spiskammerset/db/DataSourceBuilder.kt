@@ -1,4 +1,4 @@
-package no.nav.helse.spiskammers.spiskammerset.db
+package no.nav.helse.spiskammerset.spiskammerset.db
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource

@@ -1,4 +1,4 @@
-package no.nav.helse.spiskammers.spiskammerset
+package no.nav.helse.spiskammerset.spiskammerset
 
 import java.time.LocalDate
 import java.time.Month

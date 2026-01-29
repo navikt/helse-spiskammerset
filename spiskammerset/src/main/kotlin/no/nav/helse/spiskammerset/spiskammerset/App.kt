@@ -1,4 +1,4 @@
-package no.nav.helse.spiskammers.spiskammerset
+package no.nav.helse.spiskammerset.spiskammerset
 
 import com.auth0.jwk.JwkProviderBuilder
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -14,10 +14,10 @@ import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.prometheus.metrics.model.registry.PrometheusRegistry
-import no.nav.helse.spiskammers.spiskammerset.api.forsikring
-import no.nav.helse.spiskammers.spiskammerset.db.DataSourceBuilder
-import no.nav.helse.spiskammers.spiskammerset.db.DefaultDataSourceBuilder
-import no.nav.helse.spiskammers.spiskammerset.db.ForsikringDao
+import no.nav.helse.spiskammerset.spiskammerset.api.forsikring
+import no.nav.helse.spiskammerset.spiskammerset.db.DataSourceBuilder
+import no.nav.helse.spiskammerset.spiskammerset.db.DefaultDataSourceBuilder
+import no.nav.helse.spiskammerset.spiskammerset.db.ForsikringDao
 import org.slf4j.LoggerFactory
 import java.net.URI
 
@@ -41,7 +41,7 @@ fun main() {
         ),
         objectMapper = objectmapper,
         applicationLogger = logg,
-        callLogger = LoggerFactory.getLogger("no.nav.helse.spiskammers.spiskammerset.CallLogging"),
+        callLogger = LoggerFactory.getLogger("no.nav.helse.spiskammerset.spiskammerset.CallLogging"),
         timersConfig = { call, _ ->
             this
                 .tag("azp_name", call.principal<JWTPrincipal>()?.get("azp_name") ?: "n/a")
