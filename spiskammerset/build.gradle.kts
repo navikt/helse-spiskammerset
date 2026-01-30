@@ -3,12 +3,14 @@ val kotliqueryVersion = "1.9.0"
 val logbackClassicVersion = "1.5.25"
 val logbackEncoderVersion = "8.0"
 val ktorVersion = "3.2.3" // bør være samme som i <com.github.navikt.tbd-libs:naisful-app>
-val jacksonVersion = "2.18.3"
 val flywayCoreVersion = "11.5.0"
 val hikariCPVersion = "6.3.0"
 val postgresqlVersion = "42.7.7"
 
 dependencies {
+    implementation(project(":oppbevaringsboks"))
+    implementation(project(":forsikring"))
+
     api("ch.qos.logback:logback-classic:$logbackClassicVersion")
     api("net.logstash.logback:logstash-logback-encoder:$logbackEncoderVersion")
 
@@ -16,8 +18,6 @@ dependencies {
     api("io.ktor:ktor-server-auth-jwt:$ktorVersion") {
         exclude(group = "junit")
     }
-
-    api("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}")
 
     api("com.github.navikt.tbd-libs:naisful-app:${tbdLibsVersion}")
     api("org.flywaydb:flyway-database-postgresql:${flywayCoreVersion}")

@@ -1,3 +1,3 @@
 rootProject.name = "spiskammerset"
 
-include("spiskammerset", "mottak")
+include("spiskammerset", "mottak", "oppbevaringsboks", "forsikring")

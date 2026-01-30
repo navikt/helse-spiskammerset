@@ -20,6 +20,9 @@ import no.nav.helse.spiskammerset.spiskammerset.db.DefaultDataSourceBuilder
 import no.nav.helse.spiskammerset.spiskammerset.db.ForsikringDao
 import org.slf4j.LoggerFactory
 import java.net.URI
+import no.nav.helse.spiskammerset.oppbevaringsboks.Oppbevaringsboks
+import no.nav.helse.spiskammerset.spiskammerset.reisverk.Hendelsehåndterer
+import no.nav.helse.spiskammerset.spiskammerset.reisverk.hendelse
 
 private val logg = LoggerFactory.getLogger(::main.javaClass)
 internal val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
@@ -75,8 +78,14 @@ internal fun Application.spiskammerset(
         dataSourceBuilder.migrate()
     }
 
-    val forsikringDao = ForsikringDao(dataSourceBuilder.dataSource)
+    val dataSource = dataSourceBuilder.dataSource
+    val forsikringDao = ForsikringDao(dataSource)
+
+    val oppbevaringsbokser = listOf<Oppbevaringsboks>()
+    val hendelsehåndterer = Hendelsehåndterer(dataSource, oppbevaringsbokser)
+
     routing {
         authenticate("forsikring") { forsikring(forsikringDao) }
+        authenticate("hendelse") { hendelse(hendelsehåndterer) }
     }
 }
