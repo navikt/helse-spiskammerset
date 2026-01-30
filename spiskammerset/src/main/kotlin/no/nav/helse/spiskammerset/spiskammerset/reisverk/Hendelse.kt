@@ -14,9 +14,6 @@ data class VedtaksperiodeId(val id: UUID) {
 data class BehandlingId(val id: UUID) {
     override fun toString() = id.toString()
 }
-data class EndringId(val id: UUID) {
-    override fun toString() = id.toString()
-}
 data class HendelseId(val id: UUID) {
     override fun toString() = id.toString()
 }
@@ -39,7 +36,6 @@ data class Hendelse(
     val personidentifikator: Personidentifikator,
     val vedtaksperiodeId: VedtaksperiodeId,
     val behandlingId: BehandlingId,
-    val endringId: EndringId,
     val periode: Periode,
     val yrkesaktivitetstype: Yrkesaktivitetstype,
     val organisasjonsnummer: Organisasjonsnummer?,
@@ -53,7 +49,6 @@ data class Hendelse(
                 personidentifikator = Personidentifikator(json["fødselsnummer"].asText()),
                 vedtaksperiodeId = VedtaksperiodeId(UUID.fromString(json["vedtaksperiodeId"].asText())),
                 behandlingId = BehandlingId(UUID.fromString(json["behandlingId"].asText())),
-                endringId = EndringId(UUID.fromString(json["endringId"].asText())),
                 periode = Periode(
                     fom = LocalDate.parse(json["fom"].asText()),
                     tom = LocalDate.parse(json["tom"].asText())

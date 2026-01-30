@@ -20,6 +20,7 @@ import no.nav.helse.spiskammerset.spiskammerset.db.DefaultDataSourceBuilder
 import no.nav.helse.spiskammerset.spiskammerset.db.ForsikringDao
 import org.slf4j.LoggerFactory
 import java.net.URI
+import no.nav.helse.spiskammerset.forsikring.Forsikring
 import no.nav.helse.spiskammerset.oppbevaringsboks.Oppbevaringsboks
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.Hendelsehåndterer
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.hendelse
@@ -81,7 +82,7 @@ internal fun Application.spiskammerset(
     val dataSource = dataSourceBuilder.dataSource
     val forsikringDao = ForsikringDao(dataSource)
 
-    val oppbevaringsbokser = listOf<Oppbevaringsboks>()
+    val oppbevaringsbokser = listOf<Oppbevaringsboks>(Forsikring)
     val hendelsehåndterer = Hendelsehåndterer(dataSource, oppbevaringsbokser)
 
     routing {
