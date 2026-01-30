@@ -12,7 +12,8 @@ internal fun Connection.finnRettHylle(hendelseId: HendelseId, personidentifikato
     val sql = """
         INSERT INTO hylle (personidentifikator, vedtaksperiode_id, behandling_id, yrkesaktivitetstype, organisasjonsnummer, fom, tom, hendelse_ider) 
         VALUES (:personidentifikator, :vedtaksperiodeId, :behandlingId, :yrkesaktivitetstype, :organisasjonsnummer, :fom, :tom, ARRAY[CAST(:hendelseId AS uuid)]) 
-        ON CONFLICT ON CONSTRAINT unik_behandling_id DO UPDATE SET fom = EXCLUDED.fom, tom =EXCLUDED.tom, hendelse_ider = hylle.hendelse_ider || CAST(:hendelseId AS uuid)
+        ON CONFLICT ON CONSTRAINT unik_behandling_id DO UPDATE SET fom = EXCLUDED.fom, tom = EXCLUDED.tom, hendelse_ider = hylle.hendelse_ider || CAST(:hendelseId AS uuid) 
+        WHERE hylle.vedtaksperiode_id = EXCLUDED.vedtaksperiode_id AND hylle.personidentifikator = EXCLUDED.personidentifikator
         RETURNING hyllenummer;
     """
 
