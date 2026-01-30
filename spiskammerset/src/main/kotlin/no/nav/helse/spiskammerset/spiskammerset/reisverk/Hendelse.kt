@@ -1,5 +1,6 @@
 package no.nav.helse.spiskammerset.spiskammerset.reisverk
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import java.time.LocalDate
 import java.util.UUID
@@ -31,22 +32,36 @@ data class Organisasjonsnummer(val organisasjonsnummer: String) {
     override fun toString() = organisasjonsnummer
 }
 
-data class Hendelse(
-    val hendelseId: HendelseId,
-    val personidentifikator: Personidentifikator,
+data class Behandling(
     val vedtaksperiodeId: VedtaksperiodeId,
     val behandlingId: BehandlingId,
     val periode: Periode,
     val yrkesaktivitetstype: Yrkesaktivitetstype,
     val organisasjonsnummer: Organisasjonsnummer?,
+)
+
+data class Hendelse(
+    val hendelseId: HendelseId,
+    val personidentifikator: Personidentifikator,
+    val behandlinger: List<Behandling>,
     val json: ObjectNode
 ) {
     companion object {
         fun opprett(json: ObjectNode): Hendelse {
-            val yrkesaktivitetstype = Yrkesaktivitetstype(json["yrkesaktivitetstype"].asText())
             return Hendelse(
                 hendelseId = HendelseId(UUID.fromString(json["@id"].asText())),
                 personidentifikator = Personidentifikator(json["fødselsnummer"].asText()),
+                json = json,
+                behandlinger = when (json.hasNonNull("behandlinger")) {
+                    true -> json.path("behandlinger").map { behandling(it) }
+                    false -> listOf(behandling(json))
+                }
+            )
+        }
+
+        private fun behandling(json: JsonNode): Behandling {
+            val yrkesaktivitetstype = Yrkesaktivitetstype(json["yrkesaktivitetstype"].asText())
+            return Behandling(
                 vedtaksperiodeId = VedtaksperiodeId(UUID.fromString(json["vedtaksperiodeId"].asText())),
                 behandlingId = BehandlingId(UUID.fromString(json["behandlingId"].asText())),
                 periode = Periode(
@@ -57,8 +72,7 @@ data class Hendelse(
                 organisasjonsnummer = when (yrkesaktivitetstype.erArbeidstaker) {
                     true -> Organisasjonsnummer(json["organisasjonsnummer"].asText())
                     false -> null
-                },
-                json = json
+                }
             )
         }
     }

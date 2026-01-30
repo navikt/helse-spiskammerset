@@ -6,19 +6,20 @@ import com.github.navikt.tbd_libs.sql_dsl.transaction
 import javax.sql.DataSource
 import no.nav.helse.spiskammerset.oppbevaringsboks.Oppbevaringsboks
 
-class Hendelsehåndterer(private val dataSource: DataSource, private val oppbevaringsbokser: List<Oppbevaringsboks>) {
+internal class Hendelsehåndterer(private val dataSource: DataSource, private val oppbevaringsbokser: List<Oppbevaringsboks>) {
     fun håndter(json: ObjectNode) {
         val hendelse = Hendelse.opprett(json)
 
         dataSource.connection {
             transaction {
                 if (!lagreHendelse(hendelse)) return@transaction// Håndtert før
-                val hyllenummer = finnRettHylle(hendelse)
 
-                // TODO: Ferskvare/øverste hylle/kjøleskap her
+                hendelse.behandlinger.forEach { behandling ->
+                    val hyllenummer = finnRettHylle(behandling)
 
-                oppbevaringsbokser.forEach { oppbevaringsboks ->
-                    oppbevaringsboks.leggPå(hyllenummer, json, this)
+                    oppbevaringsbokser.forEach { oppbevaringsboks ->
+                        oppbevaringsboks.leggPå(hyllenummer, json, this)
+                    }
                 }
             }
         }
