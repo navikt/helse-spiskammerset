@@ -15,7 +15,7 @@ internal class Hendelsehåndterer(private val dataSource: DataSource, private va
                 if (!lagreHendelse(hendelse)) return@transaction// Håndtert før
 
                 hendelse.behandlinger.forEach { behandling ->
-                    val hyllenummer = finnRettHylle(behandling)
+                    val hyllenummer = finnRettHylle(hendelse.hendelseId, hendelse.personidentifikator, behandling)
 
                     oppbevaringsbokser.forEach { oppbevaringsboks ->
                         oppbevaringsboks.leggPå(hyllenummer, json, this)
