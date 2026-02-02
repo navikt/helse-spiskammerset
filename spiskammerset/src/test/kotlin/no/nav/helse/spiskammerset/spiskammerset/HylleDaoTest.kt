@@ -5,6 +5,7 @@ import java.util.UUID
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.Behandling
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.BehandlingId
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.FunnetHylle
+import no.nav.helse.spiskammerset.spiskammerset.reisverk.Hyllestatus
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.Organisasjonsnummer
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.Periode
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.Personidentifikator
@@ -26,16 +27,13 @@ class HylleDaoTest {
                 tom = LocalDate.parse("2018-01-30")
             )
         )
-        val personidentifikator = Personidentifikator("11111111111")
 
         dataSource.connection.use { connection ->
             val hyllenummer1 = connection.finnRettHylle(
-                personidentifikator = personidentifikator,
                 behandling = behandlingFraHendelse1
             ).hyllenummer
 
             val hyllenummer2 = connection.finnRettHylle(
-                personidentifikator = personidentifikator,
                 behandling = behandlingFraHendelse2
             ).hyllenummer
 
@@ -46,11 +44,10 @@ class HylleDaoTest {
     @Test
     fun `Finne hyller på person + periode`() = databaseTest { dataSource ->
         val personidentifikator = Personidentifikator("12345678910")
-        val opprettetBehandling = lagKomplettBehandling(fom = 2.januar, tom = 30.januar)
+        val opprettetBehandling = lagKomplettBehandling(fom = 2.januar, tom = 30.januar, personidentifikator = personidentifikator)
 
         dataSource.connection.use { connection ->
             connection.finnRettHylle(
-                personidentifikator = personidentifikator,
                 behandling = opprettetBehandling
             )
 
@@ -62,11 +59,62 @@ class HylleDaoTest {
         }
     }
 
-    private fun lagKomplettBehandling(fom: LocalDate = 1.januar, tom: LocalDate = 31.januar) = Behandling.KomplettBehandling(
+    @Test
+    fun `En hyllereise`() = databaseTest { dataSource ->
+        val behandlingFraHendelse1 = lagKomplettBehandling()
+        val behandlingFraHendelse2 = behandlingFraHendelse1.copy(
+            periode = Periode(2.januar, 30.januar)
+        )
+        val behandlingFrahendelse3 = behandlingFraHendelse2.copy()
+
+        dataSource.connection.use { connection ->
+            val hyllestatus1 = connection.finnRettHylle(
+                behandling = behandlingFraHendelse1
+            )
+            val hyllenummer = hyllestatus1.hyllenummer
+            assertEquals(Hyllestatus.NyHylle::class, hyllestatus1::class)
+
+            assertEquals(Hyllestatus.EndretHylle(hyllenummer), connection.finnRettHylle(
+                behandling = behandlingFraHendelse2
+            ))
+
+            assertEquals(Hyllestatus.UendretHylle(hyllenummer), connection.finnRettHylle(
+                behandling = behandlingFrahendelse3
+            ))
+
+            assertEquals(Hyllestatus.EndretHylle(hyllenummer), connection.finnRettHylle(
+                behandling = lagMinimalBehandling(
+                    behandlingId = behandlingFraHendelse1.behandlingId,
+                    periode = Periode(3.januar, 30.januar)
+                )
+            ))
+
+            assertEquals(Hyllestatus.UendretHylle(hyllenummer), connection.finnRettHylle(
+                behandling = lagMinimalBehandling(
+                    behandlingId = behandlingFraHendelse1.behandlingId
+                )
+            ))
+
+            assertEquals(Hyllestatus.UendretHylle(hyllenummer), connection.finnRettHylle(
+                behandling = lagMinimalBehandling(
+                    behandlingId = behandlingFraHendelse1.behandlingId,
+                    periode = Periode(3.januar, 30.januar)
+                )
+            ))
+        }
+    }
+
+    private fun lagKomplettBehandling(fom: LocalDate = 1.januar, tom: LocalDate = 31.januar, personidentifikator: Personidentifikator = Personidentifikator("11111111111")) = Behandling.KomplettBehandling(
         vedtaksperiodeId = VedtaksperiodeId(UUID.randomUUID()),
         behandlingId = BehandlingId(UUID.randomUUID()),
         periode = Periode(fom, tom),
         yrkesaktivitetstype = Yrkesaktivitetstype("ARBEIDSTAKER"),
-        organisasjonsnummer = Organisasjonsnummer("999999999")
+        organisasjonsnummer = Organisasjonsnummer("999999999"),
+        personidentifikator = personidentifikator
+    )
+
+    private fun lagMinimalBehandling(behandlingId: BehandlingId, periode: Periode? = null) = Behandling.MinimalBehandling(
+        behandlingId = behandlingId,
+        periode = periode
     )
 }

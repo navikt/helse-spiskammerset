@@ -35,7 +35,9 @@ data class Organisasjonsnummer(val organisasjonsnummer: String) {
 sealed interface Behandling {
     val behandlingId: BehandlingId
 
+    // Inneholder all informasjon som må til for å lage en "Hylle"
     data class KomplettBehandling(
+        val personidentifikator: Personidentifikator,
         val vedtaksperiodeId: VedtaksperiodeId,
         override val behandlingId: BehandlingId,
         val periode: Periode,
@@ -43,6 +45,7 @@ sealed interface Behandling {
         val organisasjonsnummer: Organisasjonsnummer?,
     ): Behandling
 
+    // Inneholder kun referanse til behandlingen og det som kan endres på en behandling (per nå kun periode)
     data class MinimalBehandling(
         override val behandlingId: BehandlingId,
         val periode: Periode?
@@ -51,7 +54,6 @@ sealed interface Behandling {
 
 data class Hendelse(
     val hendelseId: HendelseId,
-    val personidentifikator: Personidentifikator,
     val behandlinger: List<Behandling>,
     val json: ObjectNode
 ) {
@@ -59,7 +61,6 @@ data class Hendelse(
         fun opprett(json: ObjectNode): Hendelse {
             return Hendelse(
                 hendelseId = HendelseId(UUID.fromString(json["@id"].asText())),
-                personidentifikator = Personidentifikator(json["fødselsnummer"].asText()),
                 json = json,
                 behandlinger = when (json.hasNonNull("behandlinger")) {
                     true -> json.path("behandlinger").map { behandling(it) }
@@ -69,8 +70,10 @@ data class Hendelse(
         }
 
         private fun behandling(json: JsonNode): Behandling {
+            // TODO: Mangler mapping om det bare er en "MinimalBehandling"
             val yrkesaktivitetstype = Yrkesaktivitetstype(json["yrkesaktivitetstype"].asText())
             return Behandling.KomplettBehandling(
+                personidentifikator = Personidentifikator(json["fødselsnummer"].asText()),
                 vedtaksperiodeId = VedtaksperiodeId(UUID.fromString(json["vedtaksperiodeId"].asText())),
                 behandlingId = BehandlingId(UUID.fromString(json["behandlingId"].asText())),
                 periode = Periode(

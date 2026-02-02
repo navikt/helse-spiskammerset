@@ -4,7 +4,6 @@ import com.github.navikt.tbd_libs.sql_dsl.firstOrNull
 import com.github.navikt.tbd_libs.sql_dsl.localDate
 import com.github.navikt.tbd_libs.sql_dsl.mapNotNull
 import com.github.navikt.tbd_libs.sql_dsl.prepareStatementWithNamedParameters
-import com.github.navikt.tbd_libs.sql_dsl.singleOrNull
 import com.github.navikt.tbd_libs.sql_dsl.string
 import com.github.navikt.tbd_libs.sql_dsl.stringOrNull
 import com.github.navikt.tbd_libs.sql_dsl.uuid
@@ -22,17 +21,17 @@ data class FunnetHylle(
 
 interface Hyllestatus {
     val hyllenummer: Hyllenummer
-    data class NyHylle(override val hyllenummer: Hyllenummer): Hyllestatus
-    data class EndretHylle(override val hyllenummer: Hyllenummer): Hyllestatus
-    data class UendretHylle(override val hyllenummer: Hyllenummer): Hyllestatus
+    data class NyHylle(override val hyllenummer: Hyllenummer): Hyllestatus // Hyllen ble opprettet nå
+    data class EndretHylle(override val hyllenummer: Hyllenummer): Hyllestatus // Informasjon på hyllen ble endret
+    data class UendretHylle(override val hyllenummer: Hyllenummer): Hyllestatus // Intet nytt fra Vestfronten
 }
 
-internal fun Connection.finnRettHylle(personidentifikator: Personidentifikator, behandling: Behandling) = when (behandling) {
-    is Behandling.KomplettBehandling -> finnRettHylle(personidentifikator, behandling)
+internal fun Connection.finnRettHylle(behandling: Behandling) = when (behandling) {
+    is Behandling.KomplettBehandling -> finnRettHylle(behandling)
     is Behandling.MinimalBehandling -> finnRettHylle(behandling)
 }
 
-private fun Connection.finnRettHylle(personidentifikator: Personidentifikator, behandling: Behandling.KomplettBehandling): Hyllestatus {
+private fun Connection.finnRettHylle(behandling: Behandling.KomplettBehandling): Hyllestatus {
     @Language("PostgreSQL")
     val sql = """
         INSERT INTO hylle (personidentifikator, vedtaksperiode_id, behandling_id, yrkesaktivitetstype, organisasjonsnummer, fom, tom) 
@@ -42,7 +41,7 @@ private fun Connection.finnRettHylle(personidentifikator: Personidentifikator, b
     """
 
     val hyllenummer = prepareStatementWithNamedParameters(sql) {
-        withParameter("personidentifikator", personidentifikator.id)
+        withParameter("personidentifikator", behandling.personidentifikator.id)
         withParameter("vedtaksperiodeId", behandling.vedtaksperiodeId.id)
         withParameter("behandlingId", behandling.behandlingId.id)
         withParameter("yrkesaktivitetstype", behandling.yrkesaktivitetstype.type)
@@ -61,7 +60,7 @@ private fun Connection.finnRettHylle(behandling: Behandling.MinimalBehandling): 
 
     val hyllenummer =  prepareStatementWithNamedParameters(finnHylle) {
         withParameter("behandlingId", behandling.behandlingId.id)
-    }.singleOrNull(ResultSet::hyllenummer) ?: error("Finner ingen behandling med behandlingId ${behandling.behandlingId}. Kan ikke bygge videre før den opprettes.")
+    }.firstOrNull(ResultSet::hyllenummer) ?: error("Finner ingen behandling med behandlingId ${behandling.behandlingId}. Kan ikke bygge videre før den opprettes.")
 
     val gjeldendePeriode = behandling.periode ?: return Hyllestatus.UendretHylle(hyllenummer)
 
@@ -70,14 +69,13 @@ private fun Connection.finnRettHylle(behandling: Behandling.MinimalBehandling): 
         UPDATE hylle 
         SET fom = :fom, tom = :tom
         WHERE behandling_id = :behandlingId AND (fom != :fom OR tom != :tom)
-        RETURNING hyllenummer
     """
 
     val endretPeriode = prepareStatementWithNamedParameters(oppdatertPeriode) {
         withParameter("behandlingId", behandling.behandlingId.id)
         withParameter("fom", gjeldendePeriode.fom)
         withParameter("tom", gjeldendePeriode.tom)
-    }.use(PreparedStatement::execute)
+    }.use(PreparedStatement::executeUpdate) == 1
 
     return when (endretPeriode) {
         true -> Hyllestatus.EndretHylle(hyllenummer)
@@ -103,6 +101,7 @@ internal fun Connection.finnHyller(periode: Periode, vararg personidentifikatore
     }.mapNotNull { resultset -> FunnetHylle(
         hyllenummer = Hyllenummer(resultset.getLong("hyllenummer")),
         behandling = Behandling.KomplettBehandling(
+            personidentifikator = Personidentifikator(resultset.getString("personidentifikator")),
             vedtaksperiodeId = VedtaksperiodeId(resultset.uuid("vedtaksperiode_id")),
             behandlingId = BehandlingId(resultset.uuid("behandling_id")),
             periode = Periode(resultset.localDate("fom"), resultset.localDate("tom")),
