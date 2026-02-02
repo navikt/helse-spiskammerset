@@ -19,7 +19,7 @@ internal class Hendelsehåndterer(private val dataSource: DataSource, private va
                 val endredeHyller = mutableSetOf<Hyllenummer>()
 
                 hendelse.behandlinger.forEach { behandling ->
-                    val hyllenummer = finnRettHylle(behandling).also { hyllestatus ->
+                    val hyllenummer = finnEllerOpprettHylle(behandling).also { hyllestatus ->
                         when (hyllestatus) {
                             is Hyllestatus.UendretHylle -> {}
                             is Hyllestatus.NyHylle,
