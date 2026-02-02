@@ -87,17 +87,17 @@ private fun Connection.finnRettHylle(behandling: Behandling.MinimalBehandling): 
 
 private fun ResultSet.hyllenummer() = Hyllenummer(nummer = getLong("hyllenummer"))
 
-internal fun Connection.finnHyller(personidentifikator: Personidentifikator, periode: Periode): List<FunnetHylle> {
+internal fun Connection.finnHyller(periode: Periode, vararg personidentifikatorer: Personidentifikator): List<FunnetHylle> {
 
     @Language("PostgreSQL")
     val sql = """
         SELECT * FROM hylle
-        WHERE personidentifikator = :personidentifikator
+        WHERE personidentifikator = ANY(:personidentifikatorer)
         AND periode && daterange(:fom, :tom + 1, '[)'); 
     """
 
     return prepareStatementWithNamedParameters(sql) {
-        withParameter("personidentifikator", personidentifikator.id)
+        withParameter("personidentifikatorer", personidentifikatorer.map { it.id })
         withParameter("fom", periode.fom)
         withParameter("tom", periode.tom)
     }.mapNotNull { resultset -> FunnetHylle(

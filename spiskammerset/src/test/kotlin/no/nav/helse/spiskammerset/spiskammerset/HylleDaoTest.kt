@@ -54,11 +54,11 @@ class HylleDaoTest {
                 behandling = opprettetBehandling
             )
 
-            assertEquals(emptyList<FunnetHylle>(), connection.finnHyller(personidentifikator, Periode(1.januar, 1.januar))) // før
-            assertEquals(opprettetBehandling, connection.finnHyller(personidentifikator, Periode(2.januar, 2.januar)).single().behandling) // snute
-            assertEquals(opprettetBehandling, connection.finnHyller(personidentifikator, Periode(15.januar, 15.januar)).single().behandling) // mage
-            assertEquals(opprettetBehandling, connection.finnHyller(personidentifikator, Periode(30.januar, 30.januar)).single().behandling) // hale
-            assertEquals(emptyList<FunnetHylle>(), connection.finnHyller(personidentifikator, Periode(31.januar, 31.januar))) // etter
+            assertEquals(emptyList<FunnetHylle>(), connection.finnHyller(Periode(1.januar, 1.januar), personidentifikator)) // før
+            assertEquals(opprettetBehandling, connection.finnHyller(Periode(2.januar, 2.januar), personidentifikator).single().behandling) // snute
+            assertEquals(opprettetBehandling, connection.finnHyller(Periode(15.januar, 15.januar), personidentifikator).single().behandling) // mage
+            assertEquals(opprettetBehandling, connection.finnHyller(Periode(30.januar, 30.januar), personidentifikator).single().behandling) // hale
+            assertEquals(emptyList<FunnetHylle>(), connection.finnHyller(Periode(31.januar, 31.januar), personidentifikator)) // etter
         }
     }
 
