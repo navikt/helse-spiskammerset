@@ -1,6 +1,11 @@
 package no.nav.helse.spiskammerset.spiskammerset.reisverk
 
+import com.github.navikt.tbd_libs.sql_dsl.localDate
+import com.github.navikt.tbd_libs.sql_dsl.mapNotNull
 import com.github.navikt.tbd_libs.sql_dsl.prepareStatementWithNamedParameters
+import com.github.navikt.tbd_libs.sql_dsl.string
+import com.github.navikt.tbd_libs.sql_dsl.stringOrNull
+import com.github.navikt.tbd_libs.sql_dsl.uuid
 import java.sql.Connection
 import kotlin.use
 import no.nav.helse.spiskammerset.oppbevaringsboks.Hyllenummer
@@ -35,4 +40,35 @@ internal fun Connection.finnRettHylle(hendelseId: HendelseId, personidentifikato
             }
         )
     }
+}
+
+
+data class Hylle(
+    val hyllenummer: Hyllenummer,
+    val behandling: Behandling
+)
+
+internal fun Connection.finnHyller(personidentifikator: Personidentifikator, periode: Periode): List<Hylle> {
+
+    @Language("PostgreSQL")
+    val sql = """
+        SELECT * FROM hylle
+        WHERE personidentifikator = :personidentifikator
+        AND periode && daterange(:fom, :tom + 1, '[)'); 
+    """
+
+    return prepareStatementWithNamedParameters(sql) {
+        withParameter("personidentifikator", personidentifikator.id)
+        withParameter("fom", periode.fom)
+        withParameter("tom", periode.tom)
+    }.mapNotNull { resultset -> Hylle(
+        hyllenummer = Hyllenummer(resultset.getLong("hyllenummer")),
+        behandling = Behandling(
+            vedtaksperiodeId = VedtaksperiodeId(resultset.uuid("vedtaksperiode_id")),
+            behandlingId = BehandlingId(resultset.uuid("behandling_id")),
+            periode = Periode(resultset.localDate("fom"), resultset.localDate("tom")),
+            yrkesaktivitetstype = Yrkesaktivitetstype(resultset.string("yrkesaktivitetstype")),
+            organisasjonsnummer = resultset.stringOrNull("organisasjonsnummer")?.let { Organisasjonsnummer(it) }
+        )
+    )}
 }
