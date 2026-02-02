@@ -19,7 +19,7 @@ data class FunnetHylle(
     val behandling: Behandling.KomplettBehandling
 )
 
-interface Hyllestatus {
+sealed interface Hyllestatus {
     val hyllenummer: Hyllenummer
     data class NyHylle(override val hyllenummer: Hyllenummer): Hyllestatus // Hyllen ble opprettet nå
     data class EndretHylle(override val hyllenummer: Hyllenummer): Hyllestatus // Informasjon på hyllen ble endret
