@@ -86,7 +86,9 @@ internal fun Application.spiskammerset(
     val hendelsehåndterer = Hendelsehåndterer(dataSource, oppbevaringsbokser)
 
     routing {
-        authenticate("forsikring") { forsikring(forsikringDao) }
-        authenticate("hendelse") { hendelse(hendelsehåndterer) }
+        authenticate("spissmus") {
+            forsikring(forsikringDao)
+        }
+        authenticate("husmor") { hendelse(hendelsehåndterer) }
     }
 }
