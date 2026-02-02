@@ -23,6 +23,7 @@ import java.net.URI
 import no.nav.helse.spiskammerset.forsikring.Forsikring
 import no.nav.helse.spiskammerset.oppbevaringsboks.Oppbevaringsboks
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.Hendelsehåndterer
+import no.nav.helse.spiskammerset.spiskammerset.reisverk.allePerioder
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.hendelse
 
 private val logg = LoggerFactory.getLogger(::main.javaClass)
@@ -87,6 +88,7 @@ internal fun Application.spiskammerset(
 
     routing {
         authenticate("spissmus") {
+            allePerioder(dataSource)
             forsikring(forsikringDao)
         }
         authenticate("husmor") { hendelse(hendelsehåndterer) }

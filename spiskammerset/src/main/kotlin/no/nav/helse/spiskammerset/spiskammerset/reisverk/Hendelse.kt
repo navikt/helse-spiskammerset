@@ -3,6 +3,7 @@ package no.nav.helse.spiskammerset.spiskammerset.reisverk
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.UUID
 
 data class Personidentifikator(val id: String) {
@@ -43,7 +44,9 @@ sealed interface Behandling {
         val periode: Periode,
         val yrkesaktivitetstype: Yrkesaktivitetstype,
         val organisasjonsnummer: Organisasjonsnummer?,
-    ): Behandling
+        val opprettet: OffsetDateTime = OffsetDateTime.MIN,
+    ): Behandling {
+    }
 
     // Inneholder kun referanse til behandlingen og det som kan endres på en behandling (per nå kun periode)
     data class MinimalBehandling(
