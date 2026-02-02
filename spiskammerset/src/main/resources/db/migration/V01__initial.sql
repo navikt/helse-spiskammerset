@@ -13,7 +13,7 @@ CREATE TABLE hendelse
 (
     id                              BIGINT              GENERATED ALWAYS AS IDENTITY,
     hendelse_id                     UUID                NOT NULL,
-    hendelse_type                   TEXT                NOT NULL,
+    hendelsetype                    TEXT                NOT NULL,
     hendelse                        JSONB               NOT NULL,
     opprettet                       TIMESTAMPTZ         NOT NULL DEFAULT now(),
     PRIMARY KEY (id),

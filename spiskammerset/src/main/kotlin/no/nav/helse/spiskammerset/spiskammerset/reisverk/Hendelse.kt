@@ -57,6 +57,7 @@ sealed interface Behandling {
 
 data class Hendelse(
     val hendelseId: HendelseId,
+    val hendelsetype: String,
     val behandlinger: List<Behandling>,
     val json: ObjectNode
 ) {
@@ -64,6 +65,7 @@ data class Hendelse(
         fun opprett(json: ObjectNode): Hendelse {
             return Hendelse(
                 hendelseId = HendelseId(UUID.fromString(json["@id"].asText())),
+                hendelsetype = json["@event_name"].asText(),
                 json = json,
                 behandlinger = when (json.hasNonNull("behandlinger")) {
                     true -> json.path("behandlinger").map { behandling(it) }
