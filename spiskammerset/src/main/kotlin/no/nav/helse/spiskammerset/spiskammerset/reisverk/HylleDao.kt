@@ -26,17 +26,17 @@ interface Hyllestatus {
     data class UendretHylle(override val hyllenummer: Hyllenummer): Hyllestatus
 }
 
-internal fun Connection.finnRettHylle(hendelseId: HendelseId, personidentifikator: Personidentifikator, behandling: Behandling) = when (behandling) {
-    is Behandling.KomplettBehandling -> finnRettHylle(hendelseId, personidentifikator, behandling)
+internal fun Connection.finnRettHylle(personidentifikator: Personidentifikator, behandling: Behandling) = when (behandling) {
+    is Behandling.KomplettBehandling -> finnRettHylle(personidentifikator, behandling)
     is Behandling.MinimalBehandling -> finnRettHylle(behandling)
 }
 
-private fun Connection.finnRettHylle(hendelseId: HendelseId, personidentifikator: Personidentifikator, behandling: Behandling.KomplettBehandling): Hyllestatus {
+private fun Connection.finnRettHylle(personidentifikator: Personidentifikator, behandling: Behandling.KomplettBehandling): Hyllestatus {
     @Language("PostgreSQL")
     val sql = """
-        INSERT INTO hylle (personidentifikator, vedtaksperiode_id, behandling_id, yrkesaktivitetstype, organisasjonsnummer, fom, tom, hendelse_ider) 
-        VALUES (:personidentifikator, :vedtaksperiodeId, :behandlingId, :yrkesaktivitetstype, :organisasjonsnummer, :fom, :tom, ARRAY[CAST(:hendelseId AS uuid)]) 
-        ON CONFLICT ON CONSTRAINT unik_behandling_id DO UPDATE SET fom = EXCLUDED.fom, tom = EXCLUDED.tom, hendelse_ider = hylle.hendelse_ider || CAST(:hendelseId AS uuid) 
+        INSERT INTO hylle (personidentifikator, vedtaksperiode_id, behandling_id, yrkesaktivitetstype, organisasjonsnummer, fom, tom) 
+        VALUES (:personidentifikator, :vedtaksperiodeId, :behandlingId, :yrkesaktivitetstype, :organisasjonsnummer, :fom, :tom) 
+        ON CONFLICT ON CONSTRAINT unik_behandling_id DO UPDATE SET fom = EXCLUDED.fom, tom = EXCLUDED.tom
         WHERE hylle.vedtaksperiode_id = EXCLUDED.vedtaksperiode_id AND hylle.personidentifikator = EXCLUDED.personidentifikator
         RETURNING hyllenummer;
     """
@@ -50,7 +50,6 @@ private fun Connection.finnRettHylle(hendelseId: HendelseId, personidentifikator
         else withParameter("organisasjonsnummer", behandling.organisasjonsnummer.organisasjonsnummer)
         withParameter("fom", behandling.periode.fom)
         withParameter("tom", behandling.periode.tom)
-        withParameter("hendelseId", hendelseId.id.toString())
     }.singleOrNull(ResultSet::hyllenummer) ?: error("TODO")
 
     return Hyllestatus.NyHylle(hyllenummer)

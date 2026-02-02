@@ -4,7 +4,6 @@ import java.time.LocalDate
 import java.util.UUID
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.Behandling
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.BehandlingId
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.HendelseId
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.FunnetHylle
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.Organisasjonsnummer
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.Periode
@@ -21,9 +20,6 @@ class HylleDaoTest {
 
     @Test
     fun `To hendelser for samme behandling gir samme hyllenummer`() = databaseTest { dataSource ->
-        val hendelseId1 = HendelseId(UUID.randomUUID())
-        val hendelseId2 = HendelseId(UUID.randomUUID())
-
         val behandlingFraHendelse1 = lagKomplettBehandling()
         val behandlingFraHendelse2 = behandlingFraHendelse1.copy(
             periode = Periode(
@@ -35,13 +31,11 @@ class HylleDaoTest {
 
         dataSource.connection.use { connection ->
             val hyllenummer1 = connection.finnRettHylle(
-                hendelseId = hendelseId1,
                 personidentifikator = personidentifikator,
                 behandling = behandlingFraHendelse1
             )
 
             val hyllenummer2 = connection.finnRettHylle(
-                hendelseId = hendelseId2,
                 personidentifikator = personidentifikator,
                 behandling = behandlingFraHendelse2
             )
@@ -52,9 +46,6 @@ class HylleDaoTest {
 
     @Test
     fun `En behandling som plutselig får melding på en annen vedtaksperiode`() = databaseTest { dataSource ->
-        val hendelseId1 = HendelseId(UUID.randomUUID())
-        val hendelseId2 = HendelseId(UUID.randomUUID())
-
         val behandlingFraHendelse1 = lagKomplettBehandling()
         val behandlingFraHendelse2 = behandlingFraHendelse1.copy(
             vedtaksperiodeId = VedtaksperiodeId(UUID.randomUUID())
@@ -63,13 +54,11 @@ class HylleDaoTest {
 
         dataSource.connection.use { connection ->
             connection.finnRettHylle(
-                hendelseId = hendelseId1,
                 personidentifikator = personidentifikator,
                 behandling = behandlingFraHendelse1
             )
 
             assertThrows<NoSuchElementException> { connection.finnRettHylle(
-                hendelseId = hendelseId2,
                 personidentifikator = personidentifikator,
                 behandling = behandlingFraHendelse2
             )}
@@ -78,21 +67,16 @@ class HylleDaoTest {
 
     @Test
     fun `En behandling som plutselig får melding på en annen personidentifikator`() = databaseTest { dataSource ->
-        val hendelseId1 = HendelseId(UUID.randomUUID())
-        val hendelseId2 = HendelseId(UUID.randomUUID())
-
         val behandlingFraHendelse1 = lagKomplettBehandling()
         val behandlingFraHendelse2 = behandlingFraHendelse1.copy()
 
         dataSource.connection.use { connection ->
             connection.finnRettHylle(
-                hendelseId = hendelseId1,
                 personidentifikator = Personidentifikator("11111111111"),
                 behandling = behandlingFraHendelse1
             )
 
             assertThrows<NoSuchElementException> { connection.finnRettHylle(
-                hendelseId = hendelseId2,
                 personidentifikator = Personidentifikator("11111111112"),
                 behandling = behandlingFraHendelse2
             )}
@@ -106,7 +90,6 @@ class HylleDaoTest {
 
         dataSource.connection.use { connection ->
             connection.finnRettHylle(
-                hendelseId = HendelseId(UUID.randomUUID()),
                 personidentifikator = personidentifikator,
                 behandling = opprettetBehandling
             )
