@@ -3,16 +3,35 @@ package no.nav.helse.spiskammerset.spiskammerset.reisverk
 import com.github.navikt.tbd_libs.sql_dsl.localDate
 import com.github.navikt.tbd_libs.sql_dsl.mapNotNull
 import com.github.navikt.tbd_libs.sql_dsl.prepareStatementWithNamedParameters
+import com.github.navikt.tbd_libs.sql_dsl.singleOrNull
 import com.github.navikt.tbd_libs.sql_dsl.string
 import com.github.navikt.tbd_libs.sql_dsl.stringOrNull
 import com.github.navikt.tbd_libs.sql_dsl.uuid
 import java.sql.Connection
+import java.sql.PreparedStatement
+import java.sql.ResultSet
 import kotlin.use
 import no.nav.helse.spiskammerset.oppbevaringsboks.Hyllenummer
 import org.intellij.lang.annotations.Language
 
-internal fun Connection.finnRettHylle(hendelseId: HendelseId, personidentifikator: Personidentifikator, behandling: Behandling): Hyllenummer {
+data class FunnetHylle(
+    val hyllenummer: Hyllenummer,
+    val behandling: Behandling.KomplettBehandling
+)
 
+interface Hyllestatus {
+    val hyllenummer: Hyllenummer
+    data class NyHylle(override val hyllenummer: Hyllenummer): Hyllestatus
+    data class EndretHylle(override val hyllenummer: Hyllenummer): Hyllestatus
+    data class UendretHylle(override val hyllenummer: Hyllenummer): Hyllestatus
+}
+
+internal fun Connection.finnRettHylle(hendelseId: HendelseId, personidentifikator: Personidentifikator, behandling: Behandling) = when (behandling) {
+    is Behandling.KomplettBehandling -> finnRettHylle(hendelseId, personidentifikator, behandling)
+    is Behandling.MinimalBehandling -> finnRettHylle(behandling)
+}
+
+private fun Connection.finnRettHylle(hendelseId: HendelseId, personidentifikator: Personidentifikator, behandling: Behandling.KomplettBehandling): Hyllestatus {
     @Language("PostgreSQL")
     val sql = """
         INSERT INTO hylle (personidentifikator, vedtaksperiode_id, behandling_id, yrkesaktivitetstype, organisasjonsnummer, fom, tom, hendelse_ider) 
@@ -22,7 +41,7 @@ internal fun Connection.finnRettHylle(hendelseId: HendelseId, personidentifikato
         RETURNING hyllenummer;
     """
 
-    return prepareStatementWithNamedParameters(sql) {
+    val hyllenummer = prepareStatementWithNamedParameters(sql) {
         withParameter("personidentifikator", personidentifikator.id)
         withParameter("vedtaksperiodeId", behandling.vedtaksperiodeId.id)
         withParameter("behandlingId", behandling.behandlingId.id)
@@ -32,23 +51,44 @@ internal fun Connection.finnRettHylle(hendelseId: HendelseId, personidentifikato
         withParameter("fom", behandling.periode.fom)
         withParameter("tom", behandling.periode.tom)
         withParameter("hendelseId", hendelseId.id.toString())
-    }.executeQuery().use { resultset ->
-        Hyllenummer(
-            nummer = resultset.use { rs ->
-                check(rs.next()) { "Hva skjedde nå?" }
-                rs.getLong(1)
-            }
-        )
+    }.singleOrNull(ResultSet::hyllenummer) ?: error("TODO")
+
+    return Hyllestatus.NyHylle(hyllenummer)
+}
+
+private fun Connection.finnRettHylle(behandling: Behandling.MinimalBehandling): Hyllestatus {
+    @Language("PostgreSQL")
+    val finnHylle = """SELECT hyllenummer from hylle where behandling_id = :behandlingId"""
+
+    val hyllenummer =  prepareStatementWithNamedParameters(finnHylle) {
+        withParameter("behandling_id", behandling.behandlingId.id)
+    }.singleOrNull(ResultSet::hyllenummer) ?: error("Finner ingen behandling med behandlingId ${behandling.behandlingId}. Kan ikke bygge videre før den opprettes.")
+
+    val gjeldendePeriode = behandling.periode ?: return Hyllestatus.UendretHylle(hyllenummer)
+
+    @Language("PostgreSQL")
+    val oppdatertPeriode = """
+        UPDATE hylle 
+        SET fom = :fom, tom = :tom
+        WHERE behandling_id = :behandlingId AND (fom != :fom OR tom != :tom)
+        RETURNING hyllenummer
+    """
+
+    val endretPeriode = prepareStatementWithNamedParameters(oppdatertPeriode) {
+        withParameter("behandling_id", behandling.behandlingId.id)
+        withParameter("fom", gjeldendePeriode.fom)
+        withParameter("tom", gjeldendePeriode.tom)
+    }.use(PreparedStatement::execute)
+
+    return when (endretPeriode) {
+        true -> Hyllestatus.EndretHylle(hyllenummer)
+        false -> Hyllestatus.UendretHylle(hyllenummer)
     }
 }
 
+private fun ResultSet.hyllenummer() = Hyllenummer(nummer = getLong("hyllenummer"))
 
-data class Hylle(
-    val hyllenummer: Hyllenummer,
-    val behandling: Behandling
-)
-
-internal fun Connection.finnHyller(personidentifikator: Personidentifikator, periode: Periode): List<Hylle> {
+internal fun Connection.finnHyller(personidentifikator: Personidentifikator, periode: Periode): List<FunnetHylle> {
 
     @Language("PostgreSQL")
     val sql = """
@@ -61,9 +101,9 @@ internal fun Connection.finnHyller(personidentifikator: Personidentifikator, per
         withParameter("personidentifikator", personidentifikator.id)
         withParameter("fom", periode.fom)
         withParameter("tom", periode.tom)
-    }.mapNotNull { resultset -> Hylle(
+    }.mapNotNull { resultset -> FunnetHylle(
         hyllenummer = Hyllenummer(resultset.getLong("hyllenummer")),
-        behandling = Behandling(
+        behandling = Behandling.KomplettBehandling(
             vedtaksperiodeId = VedtaksperiodeId(resultset.uuid("vedtaksperiode_id")),
             behandlingId = BehandlingId(resultset.uuid("behandling_id")),
             periode = Periode(resultset.localDate("fom"), resultset.localDate("tom")),

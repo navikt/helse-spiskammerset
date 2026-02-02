@@ -22,4 +22,7 @@ class Innhold(
     val json: ObjectNode
 )
 
-
+interface Innholdsstatus {
+    data object EndretInnhold: Innholdsstatus
+    data object UendretInnhold: Innholdsstatus
+}

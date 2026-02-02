@@ -32,13 +32,22 @@ data class Organisasjonsnummer(val organisasjonsnummer: String) {
     override fun toString() = organisasjonsnummer
 }
 
-data class Behandling(
-    val vedtaksperiodeId: VedtaksperiodeId,
-    val behandlingId: BehandlingId,
-    val periode: Periode,
-    val yrkesaktivitetstype: Yrkesaktivitetstype,
-    val organisasjonsnummer: Organisasjonsnummer?,
-)
+sealed interface Behandling {
+    val behandlingId: BehandlingId
+
+    data class KomplettBehandling(
+        val vedtaksperiodeId: VedtaksperiodeId,
+        override val behandlingId: BehandlingId,
+        val periode: Periode,
+        val yrkesaktivitetstype: Yrkesaktivitetstype,
+        val organisasjonsnummer: Organisasjonsnummer?,
+    ): Behandling
+
+    data class MinimalBehandling(
+        override val behandlingId: BehandlingId,
+        val periode: Periode?
+    ): Behandling
+}
 
 data class Hendelse(
     val hendelseId: HendelseId,
@@ -61,7 +70,7 @@ data class Hendelse(
 
         private fun behandling(json: JsonNode): Behandling {
             val yrkesaktivitetstype = Yrkesaktivitetstype(json["yrkesaktivitetstype"].asText())
-            return Behandling(
+            return Behandling.KomplettBehandling(
                 vedtaksperiodeId = VedtaksperiodeId(UUID.fromString(json["vedtaksperiodeId"].asText())),
                 behandlingId = BehandlingId(UUID.fromString(json["behandlingId"].asText())),
                 periode = Periode(
