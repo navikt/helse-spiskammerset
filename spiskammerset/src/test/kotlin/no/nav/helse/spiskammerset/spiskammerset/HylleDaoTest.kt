@@ -14,7 +14,6 @@ import no.nav.helse.spiskammerset.spiskammerset.reisverk.finnHyller
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.finnRettHylle
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 class HylleDaoTest {
 
@@ -33,53 +32,14 @@ class HylleDaoTest {
             val hyllenummer1 = connection.finnRettHylle(
                 personidentifikator = personidentifikator,
                 behandling = behandlingFraHendelse1
-            )
+            ).hyllenummer
 
             val hyllenummer2 = connection.finnRettHylle(
                 personidentifikator = personidentifikator,
                 behandling = behandlingFraHendelse2
-            )
+            ).hyllenummer
 
             assertEquals(hyllenummer1, hyllenummer2)
-        }
-    }
-
-    @Test
-    fun `En behandling som plutselig får melding på en annen vedtaksperiode`() = databaseTest { dataSource ->
-        val behandlingFraHendelse1 = lagKomplettBehandling()
-        val behandlingFraHendelse2 = behandlingFraHendelse1.copy(
-            vedtaksperiodeId = VedtaksperiodeId(UUID.randomUUID())
-        )
-        val personidentifikator = Personidentifikator("11111111111")
-
-        dataSource.connection.use { connection ->
-            connection.finnRettHylle(
-                personidentifikator = personidentifikator,
-                behandling = behandlingFraHendelse1
-            )
-
-            assertThrows<NoSuchElementException> { connection.finnRettHylle(
-                personidentifikator = personidentifikator,
-                behandling = behandlingFraHendelse2
-            )}
-        }
-    }
-
-    @Test
-    fun `En behandling som plutselig får melding på en annen personidentifikator`() = databaseTest { dataSource ->
-        val behandlingFraHendelse1 = lagKomplettBehandling()
-        val behandlingFraHendelse2 = behandlingFraHendelse1.copy()
-
-        dataSource.connection.use { connection ->
-            connection.finnRettHylle(
-                personidentifikator = Personidentifikator("11111111111"),
-                behandling = behandlingFraHendelse1
-            )
-
-            assertThrows<NoSuchElementException> { connection.finnRettHylle(
-                personidentifikator = Personidentifikator("11111111112"),
-                behandling = behandlingFraHendelse2
-            )}
         }
     }
 

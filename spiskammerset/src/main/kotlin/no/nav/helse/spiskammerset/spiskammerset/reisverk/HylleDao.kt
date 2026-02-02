@@ -1,5 +1,6 @@
 package no.nav.helse.spiskammerset.spiskammerset.reisverk
 
+import com.github.navikt.tbd_libs.sql_dsl.firstOrNull
 import com.github.navikt.tbd_libs.sql_dsl.localDate
 import com.github.navikt.tbd_libs.sql_dsl.mapNotNull
 import com.github.navikt.tbd_libs.sql_dsl.prepareStatementWithNamedParameters
@@ -36,8 +37,7 @@ private fun Connection.finnRettHylle(personidentifikator: Personidentifikator, b
     val sql = """
         INSERT INTO hylle (personidentifikator, vedtaksperiode_id, behandling_id, yrkesaktivitetstype, organisasjonsnummer, fom, tom) 
         VALUES (:personidentifikator, :vedtaksperiodeId, :behandlingId, :yrkesaktivitetstype, :organisasjonsnummer, :fom, :tom) 
-        ON CONFLICT ON CONSTRAINT unik_behandling_id DO UPDATE SET fom = EXCLUDED.fom, tom = EXCLUDED.tom
-        WHERE hylle.vedtaksperiode_id = EXCLUDED.vedtaksperiode_id AND hylle.personidentifikator = EXCLUDED.personidentifikator
+        ON CONFLICT ON CONSTRAINT unik_behandling_id DO NOTHING 
         RETURNING hyllenummer;
     """
 
@@ -50,7 +50,7 @@ private fun Connection.finnRettHylle(personidentifikator: Personidentifikator, b
         else withParameter("organisasjonsnummer", behandling.organisasjonsnummer.organisasjonsnummer)
         withParameter("fom", behandling.periode.fom)
         withParameter("tom", behandling.periode.tom)
-    }.singleOrNull(ResultSet::hyllenummer) ?: error("TODO")
+    }.firstOrNull(ResultSet::hyllenummer) ?: return finnRettHylle(Behandling.MinimalBehandling(behandlingId = behandling.behandlingId, periode = behandling.periode))
 
     return Hyllestatus.NyHylle(hyllenummer)
 }
@@ -60,7 +60,7 @@ private fun Connection.finnRettHylle(behandling: Behandling.MinimalBehandling): 
     val finnHylle = """SELECT hyllenummer from hylle where behandling_id = :behandlingId"""
 
     val hyllenummer =  prepareStatementWithNamedParameters(finnHylle) {
-        withParameter("behandling_id", behandling.behandlingId.id)
+        withParameter("behandlingId", behandling.behandlingId.id)
     }.singleOrNull(ResultSet::hyllenummer) ?: error("Finner ingen behandling med behandlingId ${behandling.behandlingId}. Kan ikke bygge videre før den opprettes.")
 
     val gjeldendePeriode = behandling.periode ?: return Hyllestatus.UendretHylle(hyllenummer)
@@ -74,7 +74,7 @@ private fun Connection.finnRettHylle(behandling: Behandling.MinimalBehandling): 
     """
 
     val endretPeriode = prepareStatementWithNamedParameters(oppdatertPeriode) {
-        withParameter("behandling_id", behandling.behandlingId.id)
+        withParameter("behandlingId", behandling.behandlingId.id)
         withParameter("fom", gjeldendePeriode.fom)
         withParameter("tom", gjeldendePeriode.tom)
     }.use(PreparedStatement::execute)
