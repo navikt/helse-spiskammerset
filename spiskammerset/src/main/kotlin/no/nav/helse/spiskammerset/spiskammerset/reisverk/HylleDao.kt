@@ -26,12 +26,12 @@ sealed interface Hyllestatus {
     data class UendretHylle(override val hyllenummer: Hyllenummer): Hyllestatus // Intet nytt fra Vestfronten
 }
 
-internal fun Connection.finnRettHylle(behandling: Behandling) = when (behandling) {
-    is Behandling.KomplettBehandling -> finnRettHylle(behandling)
-    is Behandling.MinimalBehandling -> finnRettHylle(behandling)
+internal fun Connection.finnEllerOpprettHylle(behandling: Behandling) = when (behandling) {
+    is Behandling.KomplettBehandling -> finnEllerOpprettHylle(behandling)
+    is Behandling.MinimalBehandling -> finnEllerOpprettHylle(behandling)
 }
 
-private fun Connection.finnRettHylle(behandling: Behandling.KomplettBehandling): Hyllestatus {
+private fun Connection.finnEllerOpprettHylle(behandling: Behandling.KomplettBehandling): Hyllestatus {
     @Language("PostgreSQL")
     val sql = """
         INSERT INTO hylle (personidentifikator, vedtaksperiode_id, behandling_id, yrkesaktivitetstype, organisasjonsnummer, fom, tom) 
@@ -49,12 +49,12 @@ private fun Connection.finnRettHylle(behandling: Behandling.KomplettBehandling):
         else withParameter("organisasjonsnummer", behandling.organisasjonsnummer.organisasjonsnummer)
         withParameter("fom", behandling.periode.fom)
         withParameter("tom", behandling.periode.tom)
-    }.firstOrNull(ResultSet::hyllenummer) ?: return finnRettHylle(Behandling.MinimalBehandling(behandlingId = behandling.behandlingId, periode = behandling.periode))
+    }.firstOrNull(ResultSet::hyllenummer) ?: return finnEllerOpprettHylle(Behandling.MinimalBehandling(behandlingId = behandling.behandlingId, periode = behandling.periode))
 
     return Hyllestatus.NyHylle(hyllenummer)
 }
 
-private fun Connection.finnRettHylle(behandling: Behandling.MinimalBehandling): Hyllestatus {
+private fun Connection.finnEllerOpprettHylle(behandling: Behandling.MinimalBehandling): Hyllestatus {
     @Language("PostgreSQL")
     val finnHylle = """SELECT hyllenummer from hylle where behandling_id = :behandlingId"""
 

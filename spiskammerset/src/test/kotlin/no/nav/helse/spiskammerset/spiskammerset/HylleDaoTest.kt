@@ -12,7 +12,7 @@ import no.nav.helse.spiskammerset.spiskammerset.reisverk.Personidentifikator
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.VedtaksperiodeId
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.Yrkesaktivitetstype
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.finnHyller
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.finnRettHylle
+import no.nav.helse.spiskammerset.spiskammerset.reisverk.finnEllerOpprettHylle
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -29,11 +29,11 @@ class HylleDaoTest {
         )
 
         dataSource.connection.use { connection ->
-            val hyllenummer1 = connection.finnRettHylle(
+            val hyllenummer1 = connection.finnEllerOpprettHylle(
                 behandling = behandlingFraHendelse1
             ).hyllenummer
 
-            val hyllenummer2 = connection.finnRettHylle(
+            val hyllenummer2 = connection.finnEllerOpprettHylle(
                 behandling = behandlingFraHendelse2
             ).hyllenummer
 
@@ -47,7 +47,7 @@ class HylleDaoTest {
         val opprettetBehandling = lagKomplettBehandling(fom = 2.januar, tom = 30.januar, personidentifikator = personidentifikator)
 
         dataSource.connection.use { connection ->
-            connection.finnRettHylle(
+            connection.finnEllerOpprettHylle(
                 behandling = opprettetBehandling
             )
 
@@ -68,34 +68,34 @@ class HylleDaoTest {
         val behandlingFrahendelse3 = behandlingFraHendelse2.copy()
 
         dataSource.connection.use { connection ->
-            val hyllestatus1 = connection.finnRettHylle(
+            val hyllestatus1 = connection.finnEllerOpprettHylle(
                 behandling = behandlingFraHendelse1
             )
             val hyllenummer = hyllestatus1.hyllenummer
             assertEquals(Hyllestatus.NyHylle::class, hyllestatus1::class)
 
-            assertEquals(Hyllestatus.EndretHylle(hyllenummer), connection.finnRettHylle(
+            assertEquals(Hyllestatus.EndretHylle(hyllenummer), connection.finnEllerOpprettHylle(
                 behandling = behandlingFraHendelse2
             ))
 
-            assertEquals(Hyllestatus.UendretHylle(hyllenummer), connection.finnRettHylle(
+            assertEquals(Hyllestatus.UendretHylle(hyllenummer), connection.finnEllerOpprettHylle(
                 behandling = behandlingFrahendelse3
             ))
 
-            assertEquals(Hyllestatus.EndretHylle(hyllenummer), connection.finnRettHylle(
+            assertEquals(Hyllestatus.EndretHylle(hyllenummer), connection.finnEllerOpprettHylle(
                 behandling = lagMinimalBehandling(
                     behandlingId = behandlingFraHendelse1.behandlingId,
                     periode = Periode(3.januar, 30.januar)
                 )
             ))
 
-            assertEquals(Hyllestatus.UendretHylle(hyllenummer), connection.finnRettHylle(
+            assertEquals(Hyllestatus.UendretHylle(hyllenummer), connection.finnEllerOpprettHylle(
                 behandling = lagMinimalBehandling(
                     behandlingId = behandlingFraHendelse1.behandlingId
                 )
             ))
 
-            assertEquals(Hyllestatus.UendretHylle(hyllenummer), connection.finnRettHylle(
+            assertEquals(Hyllestatus.UendretHylle(hyllenummer), connection.finnEllerOpprettHylle(
                 behandling = lagMinimalBehandling(
                     behandlingId = behandlingFraHendelse1.behandlingId,
                     periode = Periode(3.januar, 30.januar)
