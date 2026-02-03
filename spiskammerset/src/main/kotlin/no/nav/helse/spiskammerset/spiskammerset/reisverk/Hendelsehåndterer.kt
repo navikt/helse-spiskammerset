@@ -3,10 +3,10 @@ package no.nav.helse.spiskammerset.spiskammerset.reisverk
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.github.navikt.tbd_libs.sql_dsl.connection
 import com.github.navikt.tbd_libs.sql_dsl.transaction
-import javax.sql.DataSource
 import no.nav.helse.spiskammerset.oppbevaringsboks.Hyllenummer
 import no.nav.helse.spiskammerset.oppbevaringsboks.Innholdsstatus
 import no.nav.helse.spiskammerset.oppbevaringsboks.Oppbevaringsboks
+import javax.sql.DataSource
 
 internal class Hendelsehåndterer(private val dataSource: DataSource, private val oppbevaringsbokser: List<Oppbevaringsboks>) {
     fun håndter(json: ObjectNode) {
@@ -14,7 +14,7 @@ internal class Hendelsehåndterer(private val dataSource: DataSource, private va
 
         dataSource.connection {
             transaction {
-                if (håndterTidligere(hendelse)) return@transaction
+                if (håndtertTidligere(hendelse)) return@transaction
 
                 val endredeHyller = mutableSetOf<Hyllenummer>()
 

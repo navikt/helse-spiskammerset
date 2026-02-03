@@ -2,30 +2,14 @@ package no.nav.helse.spiskammerset.spiskammerset
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.github.navikt.tbd_libs.sql_dsl.long
-import com.github.navikt.tbd_libs.sql_dsl.mapNotNull
-import com.github.navikt.tbd_libs.sql_dsl.prepareStatementWithNamedParameters
-import com.github.navikt.tbd_libs.sql_dsl.single
-import com.github.navikt.tbd_libs.sql_dsl.string
+import com.github.navikt.tbd_libs.sql_dsl.*
+import no.nav.helse.spiskammerset.oppbevaringsboks.Hyllenummer
+import no.nav.helse.spiskammerset.spiskammerset.reisverk.*
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 import java.sql.Connection
 import java.time.LocalDate
-import java.util.UUID
-import no.nav.helse.spiskammerset.oppbevaringsboks.Hyllenummer
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.Behandling
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.BehandlingId
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.Hendelse
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.HendelseId
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.Periode
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.Personidentifikator
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.VedtaksperiodeId
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.Yrkesaktivitetstype
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.finnEllerOpprettHylle
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.håndterTidligere
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.lagreHendelse
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
+import java.util.*
 
 class HendelseDaoTest {
 
@@ -39,11 +23,11 @@ class HendelseDaoTest {
         )
 
         dataSource.connection.use { connection ->
-            assertFalse(connection.håndterTidligere(hendelse))
+            assertFalse(connection.håndtertTidligere(hendelse))
             val hyllenummer1 = connection.finnEllerOpprettHylle(hendelse.behandlinger[0]).hyllenummer
             val hyllenummer2 = connection.finnEllerOpprettHylle(hendelse.behandlinger[1]).hyllenummer
             connection.lagreHendelse(hendelse, setOf(hyllenummer1, hyllenummer2))
-            assertTrue(connection.håndterTidligere(hendelse))
+            assertTrue(connection.håndtertTidligere(hendelse))
             assertEquals(""""{\"foo\":true,\"bar\":1}"""", connection.hentJson(hendelse.hendelseId))
             val koblinger = connection.hentKoblinger()
             assertEquals(2, koblinger.size)

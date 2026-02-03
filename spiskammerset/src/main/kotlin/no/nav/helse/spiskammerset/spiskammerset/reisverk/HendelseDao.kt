@@ -4,12 +4,12 @@ import com.github.navikt.tbd_libs.sql_dsl.firstOrNull
 import com.github.navikt.tbd_libs.sql_dsl.long
 import com.github.navikt.tbd_libs.sql_dsl.prepareStatementWithNamedParameters
 import com.github.navikt.tbd_libs.sql_dsl.single
-import java.sql.Connection
-import java.sql.PreparedStatement
 import no.nav.helse.spiskammerset.oppbevaringsboks.Hyllenummer
 import org.intellij.lang.annotations.Language
+import java.sql.Connection
+import java.sql.PreparedStatement
 
-internal fun Connection.håndterTidligere(hendelse: Hendelse): Boolean {
+internal fun Connection.håndtertTidligere(hendelse: Hendelse): Boolean {
     @Language("PostgreSQL")
     val finnHylle = """SELECT id from hendelse WHERE hendelse_id = :hendelseId"""
 
