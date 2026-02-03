@@ -14,17 +14,17 @@ import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.prometheus.metrics.model.registry.PrometheusRegistry
+import no.nav.helse.spiskammerset.forsikring.Forsikring
+import no.nav.helse.spiskammerset.oppbevaringsboks.Oppbevaringsboks
 import no.nav.helse.spiskammerset.spiskammerset.api.forsikring
 import no.nav.helse.spiskammerset.spiskammerset.db.DataSourceBuilder
 import no.nav.helse.spiskammerset.spiskammerset.db.DefaultDataSourceBuilder
 import no.nav.helse.spiskammerset.spiskammerset.db.ForsikringDao
-import org.slf4j.LoggerFactory
-import java.net.URI
-import no.nav.helse.spiskammerset.forsikring.Forsikring
-import no.nav.helse.spiskammerset.oppbevaringsboks.Oppbevaringsboks
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.Hendelsehåndterer
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.allePerioder
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.hendelse
+import org.slf4j.LoggerFactory
+import java.net.URI
 
 private val logg = LoggerFactory.getLogger(::main.javaClass)
 internal val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
@@ -34,8 +34,8 @@ private val objectmapper = jacksonObjectMapper()
 
 fun main() {
     Thread.currentThread().setUncaughtExceptionHandler { _, e ->
-        logg.error("Ufanget exception: {}", e.message, e)
-        sikkerlogg.error("Ufanget exception: {}", e.message, e)
+        logg.error("Uncaught exception: {}", e.message, e)
+        sikkerlogg.error("Uncaught exception: {}", e.message, e)
     }
 
     val app = naisApp(
