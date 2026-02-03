@@ -42,9 +42,9 @@ CREATE TABLE hylle
     CONSTRAINT unik_behandling_id UNIQUE (behandling_id)
 );
 -- Ryktene skal ha det til at dette gjør oppslag periode rasende raskt
-CREATE INDEX idx_periode ON hylle USING GIST (periode);
+CREATE EXTENSION IF NOT EXISTS btree_gist;
+CREATE INDEX idx_periode ON hylle USING GIST (periode, vedtaksperiode_id);
 -- inntil videre ubekreftede rykter
---- CREATE INDEX idx_vedtaksperiode_id ON hylle (vedtaksperiode_id); TODO: Dette med overlapp & ikke alle behandlingene på en vedtaksperioden som overlapper..
 
 -- trigger som setter 'endret'-tidspunktet automatisk etter alle UPDATES mot hylle-tabellen
 CREATE FUNCTION oppdater_endret_tidspunkt()

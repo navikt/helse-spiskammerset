@@ -118,12 +118,17 @@ internal fun Connection.finnHyller(periode: Periode, vararg personidentifikatore
     val sql = """
         SELECT h.*
         FROM hylle h
-        WHERE h.periode && daterange(:fom, :tom + 1, '[)')
-        AND EXISTS (
+        WHERE EXISTS (
             SELECT 1
             FROM hylleeier he
             WHERE he.hyllenummer = h.hyllenummer
             AND he.personidentifikator = ANY(:personidentifikatorer)
+        )
+        AND EXISTS (
+            SELECT 1
+            FROM hylle h2
+            WHERE h2.vedtaksperiode_id = h.vedtaksperiode_id
+            AND h2.periode && daterange(:fom, :tom + 1, '[)')
         );
     """
 
