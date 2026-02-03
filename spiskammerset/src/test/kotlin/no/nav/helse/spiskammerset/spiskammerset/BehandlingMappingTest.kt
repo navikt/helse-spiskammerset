@@ -4,11 +4,10 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 import kotlin.test.assertEquals
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.Behandling
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.BehandlingId
+import no.nav.helse.spiskammerset.spiskammerset.reisverk.Hylle
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.Organisasjonsnummer
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.Periode
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.Personidentifikator
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.SvaretViGir
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.VedtaksperiodeId
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.Yrkesaktivitetstype
@@ -22,9 +21,8 @@ class BehandlingMappingTest {
         val nå = OffsetDateTime.now(ZoneOffset.UTC)
         val vedtaksperiodeId = UUID.randomUUID()
         val behandlingId = UUID.randomUUID()
-        val hyller: List<Behandling.KomplettBehandling> = listOf(
-            Behandling.KomplettBehandling(
-                personidentifikator = Personidentifikator("12"),
+        val hyller =listOf(
+            Hylle(
                 vedtaksperiodeId = VedtaksperiodeId(vedtaksperiodeId),
                 behandlingId = BehandlingId(behandlingId),
                 periode = Periode(1.januar, 31.januar),

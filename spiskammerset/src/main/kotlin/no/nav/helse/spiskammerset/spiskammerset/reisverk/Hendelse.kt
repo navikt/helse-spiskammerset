@@ -35,21 +35,22 @@ data class Organisasjonsnummer(val organisasjonsnummer: String) {
 
 sealed interface Behandling {
     val behandlingId: BehandlingId
+    val personidentifikator: Personidentifikator
 
     // Inneholder all informasjon som må til for å lage en "Hylle"
     data class KomplettBehandling(
-        val personidentifikator: Personidentifikator,
-        val vedtaksperiodeId: VedtaksperiodeId,
+        override val personidentifikator: Personidentifikator,
         override val behandlingId: BehandlingId,
+        val vedtaksperiodeId: VedtaksperiodeId,
         val periode: Periode,
         val yrkesaktivitetstype: Yrkesaktivitetstype,
         val organisasjonsnummer: Organisasjonsnummer?,
-        val opprettet: OffsetDateTime = OffsetDateTime.MIN,
-    ): Behandling {
-    }
+        val opprettet: OffsetDateTime = OffsetDateTime.MIN
+    ): Behandling
 
-    // Inneholder kun referanse til behandlingen og det som kan endres på en behandling (per nå kun periode)
+    // Inneholder kun referanse til behandlingen og det som kan endres på en behandling (per nå kun periode + endret personidentifikator da..)
     data class MinimalBehandling(
+        override val personidentifikator: Personidentifikator,
         override val behandlingId: BehandlingId,
         val periode: Periode?
     ): Behandling

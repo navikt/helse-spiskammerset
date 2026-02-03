@@ -73,7 +73,7 @@ internal fun Route.allePerioder(dataSource: DataSource) {
             val tom = LocalDate.parse(requestJson["tom"].asText())
             // bruk dao til å finne alle perioder som helt eller delvis er inne i fom/tom
             val behandlinger = dataSource.connection {
-                finnHyller(Periode(fom, tom), *personIdenter).map { it.behandling }
+                finnHyller(Periode(fom, tom), *personIdenter)
             }
             // map tilbake på en fornuft måte
 
@@ -94,8 +94,8 @@ data class SvaretViGir(val yrkesaktiviteter: List<Yrkesaktivitet>) {
     }
 }
 
-fun List<Behandling.KomplettBehandling>.mapTilEndepunktformat(): SvaretViGir {
-    val groupBy: Map<YrkesaktivitetSpesifikasjon, List<Behandling.KomplettBehandling>> = this.groupBy { YrkesaktivitetSpesifikasjon(it.yrkesaktivitetstype, it.organisasjonsnummer) }
+fun List<Hylle>.mapTilEndepunktformat(): SvaretViGir {
+    val groupBy: Map<YrkesaktivitetSpesifikasjon, List<Hylle>> = this.groupBy { YrkesaktivitetSpesifikasjon(it.yrkesaktivitetstype, it.organisasjonsnummer) }
     return SvaretViGir(groupBy.map { (yrkesaktivitetsgreier, behandlinger) ->
         val behandlingerPerVedtaksperiode: List<Vedtaksperioder> = behandlinger.groupBy { it.vedtaksperiodeId }
             .map { (vedtaksperiodeId, kompletteBehandlinger) ->
