@@ -12,17 +12,17 @@ import java.net.http.HttpResponse
 import java.time.Duration
 import java.util.*
 
-internal class SpiskammersApiClient(
+internal class SpiskammersetKlient(
     private val httpClient: HttpClient,
     private val azureTokenProvider: AzureTokenProvider,
     env: Map<String, String>
 ) {
     private val cluster = env["NAIS_CLUSTER_NAME"]?.lowercase() ?: "prod-gcp"
-    private val scope = "api://$cluster.tbd.spiskammers-api/.default"
+    private val scope = "api://$cluster.tbd.spiskammerset/.default"
 
-    fun forsikring(packet: JsonMessage) {
+    fun hendelse(packet: JsonMessage) {
         post(
-            endepunkt = "forsikring",
+            endepunkt = "hendelse",
             requestBody = packet.toJson(),
             callId = UUID.fromString(packet["@id"].asText()),
             forventetResponseCode = 201
@@ -34,7 +34,7 @@ internal class SpiskammersApiClient(
         val request = HttpRequest
             .newBuilder()
             .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-            .uri(URI("http://spiskammers-api/$endepunkt"))
+            .uri(URI("http://spiskammerset/$endepunkt"))
             .timeout(Duration.ofSeconds(10))
             .header("Accept", "application/json")
             .header("Content-Type", "application/json")

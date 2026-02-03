@@ -14,12 +14,10 @@ import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.prometheus.metrics.model.registry.PrometheusRegistry
-import no.nav.helse.spiskammerset.forsikring.Forsikring
+import no.nav.helse.spiskammerset.forsikring.Forsikringsboks
 import no.nav.helse.spiskammerset.oppbevaringsboks.Oppbevaringsboks
-import no.nav.helse.spiskammerset.spiskammerset.api.forsikring
 import no.nav.helse.spiskammerset.spiskammerset.db.DataSourceBuilder
 import no.nav.helse.spiskammerset.spiskammerset.db.DefaultDataSourceBuilder
-import no.nav.helse.spiskammerset.spiskammerset.db.ForsikringDao
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.Hendelsehåndterer
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.allePerioder
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.hendelse
@@ -81,15 +79,13 @@ internal fun Application.spiskammerset(
     }
 
     val dataSource = dataSourceBuilder.dataSource
-    val forsikringDao = ForsikringDao(dataSource)
 
-    val oppbevaringsbokser = listOf<Oppbevaringsboks>(Forsikring)
+    val oppbevaringsbokser = listOf<Oppbevaringsboks>(Forsikringsboks)
     val hendelsehåndterer = Hendelsehåndterer(dataSource, oppbevaringsbokser)
 
     routing {
         authenticate("spissmus") {
             allePerioder(dataSource)
-            forsikring(forsikringDao)
         }
         authenticate("husmor") { hendelse(hendelsehåndterer) }
     }

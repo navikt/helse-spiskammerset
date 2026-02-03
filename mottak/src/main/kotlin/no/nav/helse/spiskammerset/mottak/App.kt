@@ -9,7 +9,7 @@ import java.net.http.HttpClient
 fun main() {
     val env = System.getenv()
 
-    val spiskammersApiClient = SpiskammersApiClient(
+    val spiskammersetKlient = SpiskammersetKlient(
         httpClient = HttpClient.newHttpClient(),
         azureTokenProvider = createAzureTokenClientFromEnvironment(env),
         env = env
@@ -19,6 +19,6 @@ fun main() {
     val consumerProducerFactory = ConsumerProducerFactory(kafkaConfig)
 
     RapidApplication.create(env, consumerProducerFactory = consumerProducerFactory).apply {
-        ForsikringRiver(this, spiskammersApiClient)
+        BenyttetGrunnlagsdataForBeregningRiver(this, spiskammersetKlient)
     }.start()
 }

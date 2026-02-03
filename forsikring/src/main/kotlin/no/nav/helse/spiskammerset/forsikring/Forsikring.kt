@@ -1,20 +1,22 @@
 package no.nav.helse.spiskammerset.forsikring
 
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.node.ObjectNode
-import java.sql.Connection
-import no.nav.helse.spiskammerset.oppbevaringsboks.Hyllenummer
-import no.nav.helse.spiskammerset.oppbevaringsboks.Innhold
-import no.nav.helse.spiskammerset.oppbevaringsboks.Innholdsstatus
-import no.nav.helse.spiskammerset.oppbevaringsboks.Oppbevaringsboks
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 
-data object Forsikring: Oppbevaringsboks {
-    override val etikett = "forsikring"
+val mapper = jacksonObjectMapper()
+    .registerModule(JavaTimeModule())
+    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
-    override fun leggPå(hyllenummer: Hyllenummer, json: ObjectNode, connection: Connection): Innholdsstatus {
-        TODO("Not yet implemented")
-    }
-
-    override fun taNedFra(hyllenummer: Hyllenummer, connection: Connection): Innhold? {
-        TODO("Not yet implemented")
-    }
+data class Forsikring(val dekningsgrad: Int, val navOvertarAnsvarForVentetid: Boolean, val premiegrunnlag: Int) {
+    internal fun tilJson() = mapper.readTree("""
+        {
+            "dekningsgrad": $dekningsgrad,
+            "navOvertarAnsvarForVentetid": $navOvertarAnsvarForVentetid
+            "premiegrunnlag: $premiegrunnlag
+        }
+    """) as ObjectNode
 }

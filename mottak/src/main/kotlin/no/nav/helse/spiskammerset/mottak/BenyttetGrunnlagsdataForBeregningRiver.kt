@@ -9,36 +9,35 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
 import org.slf4j.LoggerFactory
 
-internal class ForsikringRiver(
+internal class BenyttetGrunnlagsdataForBeregningRiver(
     rapidsConnection: RapidsConnection,
-    private val spiskammersApiClient: SpiskammersApiClient
+    private val spiskammersetKlient: SpiskammersetKlient
 ) : River.PacketListener {
     init {
         River(rapidsConnection).apply {
             precondition {
                 it.requireValue("@event_name", "benyttet_grunnlagsdata_for_beregning")
-                it.requireKey("forsikring")
             }
             validate {
-                it.requireKey("@id", "behandlingId", "forsikring.dekningsgrad", "forsikring.navOvertarAnsvarForVentetid")
+                it.requireKey("@id", "behandlingId", "fødselsnummer")
             }
         }.register(this)
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
-        sikkerlogg.info("Mottok opplysninger om forsikring:\n\t${packet.toJson()}")
-        forsikring(packet)
+        sikkerlogg.info("Mottok opplysninger om benyttet grunnlagsdata for beregning:\n\t${packet.toJson()}")
+        hendelse(packet)
     }
 
-    private fun forsikring(packet: JsonMessage) = try {
-        spiskammersApiClient.forsikring(packet)
-    } catch (err: Exception) {
-        sikkerlogg.error("Feil ved håndtering av forsikring", err)
-        throw err
+    private fun hendelse(packet: JsonMessage) = try {
+        spiskammersetKlient.hendelse(packet)
+    } catch (error: Exception) {
+        sikkerlogg.error("Feil ved håndtering av benyttet grunnlagsdata for beregning", error)
+        throw error
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
-        sikkerlogg.error("Forstod ikke forsikring:\n${problems.toExtendedReport()}")
+        sikkerlogg.error("Forstod ikke benyttet grunnlagsdata for beregning:\n${problems.toExtendedReport()}")
     }
 
     private companion object {
