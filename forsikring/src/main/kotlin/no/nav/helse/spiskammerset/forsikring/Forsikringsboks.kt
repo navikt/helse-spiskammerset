@@ -6,13 +6,15 @@ import java.sql.Connection
 
 data object Forsikringsboks: Oppbevaringsboks {
     override val etikett = "forsikring"
+    private val gjeldendeVersjon = Versjon(1)
 
     override fun leggPå(hyllenummer: Hyllenummer, json: ObjectNode, connection: Connection): Innholdsstatus {
         val dao = ForsikringDao(connection)
         val forsikring = Forsikring(
             dekningsgrad = json.path("dekningsgrad").asInt(),
             navOvertarAnsvarForVentetid = json.path("navOvertarAnsvarForVentetid").asBoolean(),
-            premiegrunnlag = json.path("premiegrunnlag").asInt()
+            premiegrunnlag = json.path("premiegrunnlag").asInt(),
+            versjon = gjeldendeVersjon
         )
 
         return when (dao.lagre(forsikring, hyllenummer)) {
@@ -27,7 +29,7 @@ data object Forsikringsboks: Oppbevaringsboks {
 
         return when (forsikring) {
             null -> null
-            else -> Innhold(Versjon(0, 0, 0), forsikring.tilJson()) // TODO hva er versjonsnummer??
+            else -> Innhold(forsikring.versjon, forsikring.tilJson()) // TODO hva er versjonsnummer??
         }
     }
 }
