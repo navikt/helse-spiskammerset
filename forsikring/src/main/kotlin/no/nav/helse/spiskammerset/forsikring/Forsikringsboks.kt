@@ -19,10 +19,8 @@ data object Forsikringsboks: Oppbevaringsboks {
             versjon = gjeldendeVersjon
         )
 
-        return when (dao.lagre(forsikring, hyllenummer)) {
-            0 -> Innholdsstatus.UendretInnhold
-            else -> Innholdsstatus.EndretInnhold
-        }
+        dao.lagre(forsikring, hyllenummer)
+        return Innholdsstatus.EndretInnhold
     }
 
     override fun taNedFra(hyllenummer: Hyllenummer, connection: Connection): Innhold? {

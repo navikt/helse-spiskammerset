@@ -11,7 +11,7 @@ import java.sql.Connection
 
 internal class ForsikringDao(private val connection: Connection) {
 
-    internal fun lagre(forsikring: Forsikring, hyllenummer: Hyllenummer): Int {
+    internal fun lagre(forsikring: Forsikring, hyllenummer: Hyllenummer) {
         @Language("PostgreSQL")
         val query = """ 
             INSERT INTO forsikring (dekningsgrad, nav_overtar_ansvar_for_ventetid, premiegrunnlag, hyllenummer, versjon) 
@@ -23,7 +23,7 @@ internal class ForsikringDao(private val connection: Connection) {
                 versjon = excluded.versjon
             """
 
-        return connection.prepareStatementWithNamedParameters(query) {
+        connection.prepareStatementWithNamedParameters(query) {
             withParameter("dekningsgrad", forsikring.dekningsgrad)
             withParameter("nav_overtar_ansvar_for_ventetid", forsikring.navOvertarAnsvarForVentetid)
             withParameter("premiegrunnlag", forsikring.premiegrunnlag)
