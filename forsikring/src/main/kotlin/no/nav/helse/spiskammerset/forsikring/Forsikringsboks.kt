@@ -9,6 +9,7 @@ data object Forsikringsboks: Oppbevaringsboks {
     private val gjeldendeVersjon = Versjon(1)
 
     override fun leggPå(hyllenummer: Hyllenummer, json: ObjectNode, connection: Connection): Innholdsstatus {
+        if (json["@event_name"].asText() != "benyttet_grunnlagsdata_for_beregning") return Innholdsstatus.UendretInnhold
         val forsikringJson = json["forsikring"] ?: return Innholdsstatus.UendretInnhold
         val dao = ForsikringDao(connection)
         val forsikring = Forsikring(

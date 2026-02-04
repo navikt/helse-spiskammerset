@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.sql_dsl.connection
 import no.nav.helse.spiskammerset.oppbevaringsboks.Hyllenummer
 import no.nav.helse.spiskammerset.oppbevaringsboks.Innhold
+import no.nav.helse.spiskammerset.oppbevaringsboks.Innholdsstatus
 import no.nav.helse.spiskammerset.oppbevaringsboks.Versjon
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -20,6 +21,15 @@ internal class ForsikringsboksTest {
             val hentetInnhold = Forsikringsboks.taNedFra(Hyllenummer(1), this)
             val forventetInnhold = Innhold(Versjon(1), utJson(100, true, 500_000))
             assertEquals(forventetInnhold, hentetInnhold)
+        }
+    }
+
+    @Test
+    fun `ignorerer andre events`() = databaseTest { dataSource ->
+        dataSource.connection {
+            val status = Forsikringsboks.leggPå(Hyllenummer(1), innJson(100, true, 500_000, "mjau"), this)
+
+            assertEquals(Innholdsstatus.UendretInnhold, status)
         }
     }
 
