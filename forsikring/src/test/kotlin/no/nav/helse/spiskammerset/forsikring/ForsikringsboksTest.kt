@@ -43,6 +43,16 @@ internal class ForsikringsboksTest {
         }
     }
 
+    @Test
+    fun `hva skjer når samme data forsøkes lagres to ganger`() = databaseTest { dataSource ->
+        dataSource.connection {
+            Forsikringsboks.leggPå(Hyllenummer(1), innJson(100, true, 500_000), this)
+            val status = Forsikringsboks.leggPå(Hyllenummer(1), innJson(100, true, 500_000), this)
+
+            assertEquals(Innholdsstatus.EndretInnhold, status) // Innholdet er vel egentlig ikke endret? er det litt rart eller?
+        }
+    }
+
     private fun innJson(dekningsgrad: Int, navOvertarAnsvarForVentetid: Boolean, premiegrunnlag: Int, eventName: String = "benyttet_grunnlagsdata_for_beregning"): ObjectNode {
         @Language("JSON")
         val json = """

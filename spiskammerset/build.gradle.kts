@@ -6,6 +6,7 @@ val ktorVersion = "3.2.3" // bør være samme som i <com.github.navikt.tbd-libs:
 val flywayCoreVersion = "11.5.0"
 val hikariCPVersion = "6.3.0"
 val postgresqlVersion = "42.7.7"
+val jsonAssertVersion = "1.5.3"
 
 dependencies {
     implementation(project(":oppbevaringsboks"))
@@ -29,4 +30,5 @@ dependencies {
     testImplementation("com.github.navikt.tbd-libs:postgres-testdatabaser:${tbdLibsVersion}")
     testImplementation("com.github.navikt.tbd-libs:naisful-test-app:${tbdLibsVersion}")
     testImplementation("com.github.navikt.tbd-libs:signed-jwt-issuer-test:${tbdLibsVersion}")
+    testImplementation("org.skyscreamer:jsonassert:${jsonAssertVersion}")
 }

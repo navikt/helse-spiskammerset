@@ -3,17 +3,18 @@ package no.nav.helse.spiskammerset.spiskammerset.reisverk
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.sql_dsl.connection
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.ApplicationCall
-import io.ktor.server.request.receiveText
-import io.ktor.server.response.respond
-import io.ktor.server.routing.Route
-import io.ktor.server.routing.post
+import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import no.nav.helse.spiskammerset.forsikring.Forsikringsboks
+import no.nav.helse.spiskammerset.spiskammerset.reisverk.SvaretViGir.Yrkesaktivitet.Vedtaksperioder
+import no.nav.helse.spiskammerset.spiskammerset.sikkerlogg
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.util.UUID
+import java.util.*
 import javax.sql.DataSource
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.SvaretViGir.Yrkesaktivitet.Vedtaksperioder
 
 private val objectmapper = jacksonObjectMapper()
 private suspend fun ApplicationCall.json() = objectmapper.readTree(receiveText()) as ObjectNode
@@ -79,6 +80,38 @@ internal fun Route.allePerioder(dataSource: DataSource) {
 
             call.respond(HttpStatusCode.OK, behandlinger.mapTilEndepunktformat())
         } catch (_: Exception) {
+            call.respond(HttpStatusCode.InternalServerError, "Nå har det gått til skogen")
+        }
+    }
+}
+
+/*
+    Ut hvis forsikring finnes
+    {
+        "versjon": int,
+        "forsikring": {
+            "dekningsgrad": int,
+            "dag1Eller17": int
+        }
+    }
+
+    Ut hvis forsikring ikke finnes
+    {}
+ */
+internal fun Route.forsikringForBehandling(dataSource: DataSource) {
+    get("/behandling/{behandlingId}/forsikring") {
+        try {
+            val behandlingId = BehandlingId.fraStreng(call.parameters["behandlingId"]) ?: return@get call.respond(HttpStatusCode.BadRequest, "Melding uten behandlingId blir litt rart, eller?")
+            val innhold = dataSource.connection {
+                val hyllenummer = finnHyllenummer(behandlingId) ?: return@connection null
+                Forsikringsboks.taNedFra(hyllenummer, this)
+            }
+            when (innhold) {
+                null -> call.respond(HttpStatusCode.NotFound, """{ "feilmelding": "Fant ikke forsikring for behandlingId: $behandlingId" }""")
+                else -> call.respond(HttpStatusCode.OK, innhold)
+            }
+        } catch (error: Exception) {
+            sikkerlogg.error("Feil ved henting av forsikring", error)
             call.respond(HttpStatusCode.InternalServerError, "Nå har det gått til skogen")
         }
     }

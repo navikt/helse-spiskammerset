@@ -20,6 +20,7 @@ import no.nav.helse.spiskammerset.spiskammerset.db.DataSourceBuilder
 import no.nav.helse.spiskammerset.spiskammerset.db.DefaultDataSourceBuilder
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.Hendelsehåndterer
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.allePerioder
+import no.nav.helse.spiskammerset.spiskammerset.reisverk.forsikringForBehandling
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.hendelse
 import org.slf4j.LoggerFactory
 import java.net.URI
@@ -86,6 +87,7 @@ internal fun Application.spiskammerset(
     routing {
         authenticate("spissmus") {
             allePerioder(dataSource)
+            forsikringForBehandling(dataSource)
         }
         authenticate("husmor") { hendelse(hendelsehåndterer) }
     }

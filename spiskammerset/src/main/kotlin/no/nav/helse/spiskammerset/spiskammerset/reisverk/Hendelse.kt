@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.util.UUID
+import java.util.*
 
 data class Personidentifikator(val id: String) {
     init { check(id.matches("\\d+".toRegex())) }
@@ -15,6 +15,15 @@ data class VedtaksperiodeId(val id: UUID) {
 }
 data class BehandlingId(val id: UUID) {
     override fun toString() = id.toString()
+
+    companion object {
+        fun fraStreng(behandlingIdSomStreng: String?): BehandlingId? {
+            return when (behandlingIdSomStreng) {
+                null -> null
+                else -> BehandlingId(UUID.fromString(behandlingIdSomStreng))
+            }
+        }
+    }
 }
 data class HendelseId(val id: UUID) {
     override fun toString() = id.toString()

@@ -1,19 +1,12 @@
 package no.nav.helse.spiskammerset.spiskammerset.reisverk
 
-import com.github.navikt.tbd_libs.sql_dsl.firstOrNull
-import com.github.navikt.tbd_libs.sql_dsl.localDate
-import com.github.navikt.tbd_libs.sql_dsl.mapNotNull
-import com.github.navikt.tbd_libs.sql_dsl.prepareStatementWithNamedParameters
-import com.github.navikt.tbd_libs.sql_dsl.string
-import com.github.navikt.tbd_libs.sql_dsl.stringOrNull
-import com.github.navikt.tbd_libs.sql_dsl.uuid
+import com.github.navikt.tbd_libs.sql_dsl.*
+import no.nav.helse.spiskammerset.oppbevaringsboks.Hyllenummer
+import org.intellij.lang.annotations.Language
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.time.OffsetDateTime
-import kotlin.use
-import no.nav.helse.spiskammerset.oppbevaringsboks.Hyllenummer
-import org.intellij.lang.annotations.Language
 
 data class Hylle(
     val behandlingId: BehandlingId,
@@ -34,6 +27,15 @@ sealed interface Hyllestatus {
 internal fun Connection.finnEllerOpprettHylle(behandling: Behandling) = when (behandling) {
     is Behandling.KomplettBehandling -> finnEllerOpprettHylle(behandling)
     is Behandling.MinimalBehandling -> finnEllerOpprettHylle(behandling)
+}
+
+internal fun Connection.finnHyllenummer(behandlingId: BehandlingId): Hyllenummer? {
+    @Language("PostgreSQL")
+    val finnHylle = """SELECT hyllenummer from hylle where behandling_id = :behandlingId"""
+
+    return prepareStatementWithNamedParameters(finnHylle) {
+        withParameter("behandlingId", behandlingId.id)
+    }.firstOrNull(ResultSet::hyllenummer)
 }
 
 private fun Connection.finnEllerOpprettHylle(behandling: Behandling.KomplettBehandling): Hyllestatus {
