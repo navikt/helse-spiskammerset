@@ -16,7 +16,11 @@ internal class ForsikringDao(private val connection: Connection) {
         val query = """ 
             INSERT INTO forsikring (dekningsgrad, nav_overtar_ansvar_for_ventetid, premiegrunnlag, hyllenummer, versjon) 
             VALUES (:dekningsgrad, :nav_overtar_ansvar_for_ventetid, :premiegrunnlag, :hyllenummer, :versjon) 
-            ON CONFLICT DO NOTHING 
+            ON CONFLICT (hyllenummer) DO UPDATE SET 
+                dekningsgrad = excluded.dekningsgrad, 
+                nav_overtar_ansvar_for_ventetid = excluded.nav_overtar_ansvar_for_ventetid, 
+                premiegrunnlag = excluded.premiegrunnlag,
+                versjon = excluded.versjon
             """
 
         return connection.prepareStatementWithNamedParameters(query) {
