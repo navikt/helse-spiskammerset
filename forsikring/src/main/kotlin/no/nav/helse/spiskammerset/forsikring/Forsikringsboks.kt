@@ -29,7 +29,7 @@ data object Forsikringsboks: Oppbevaringsboks {
 
         return when (forsikring) {
             null -> null
-            else -> Innhold(forsikring.versjon, forsikring.tilJson()) // TODO hva er versjonsnummer??
+            else -> Innhold(forsikring.versjon, forsikring.tilJson())
         }
     }
 }
