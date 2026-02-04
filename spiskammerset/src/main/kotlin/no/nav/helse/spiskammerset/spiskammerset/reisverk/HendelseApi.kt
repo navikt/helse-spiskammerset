@@ -94,9 +94,6 @@ internal fun Route.allePerioder(dataSource: DataSource) {
             "dag1Eller17": int
         }
     }
-
-    Ut hvis forsikring ikke finnes
-    {}
  */
 internal fun Route.forsikringForBehandling(dataSource: DataSource) {
     get("/behandling/{behandlingId}/forsikring") {
@@ -108,7 +105,7 @@ internal fun Route.forsikringForBehandling(dataSource: DataSource) {
             }
             when (innhold) {
                 null -> call.respond(HttpStatusCode.NotFound, """{ "feilmelding": "Fant ikke forsikring for behandlingId: $behandlingId" }""")
-                else -> call.respond(HttpStatusCode.OK, innhold)
+                else -> call.respond(HttpStatusCode.OK, innhold.tilJson())
             }
         } catch (error: Exception) {
             sikkerlogg.error("Feil ved henting av forsikring", error)

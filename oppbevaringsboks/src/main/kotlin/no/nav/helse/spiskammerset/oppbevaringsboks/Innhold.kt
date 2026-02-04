@@ -13,7 +13,9 @@ data class Versjon(val nummer: Int) {
 data class Innhold(
     val versjon: Versjon,
     val json: ObjectNode
-)
+) {
+    fun tilJson() = json.put("versjon", versjon.nummer).toString()
+}
 
 sealed interface Innholdsstatus {
     data object EndretInnhold: Innholdsstatus

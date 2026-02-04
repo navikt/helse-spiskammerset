@@ -16,8 +16,7 @@ data class Forsikring(val dekningsgrad: Int, val navOvertarAnsvarForVentetid: Bo
     internal fun tilJson() = mapper.readTree("""
         {
             "dekningsgrad": $dekningsgrad,
-            "navOvertarAnsvarForVentetid": $navOvertarAnsvarForVentetid,
-            "premiegrunnlag": $premiegrunnlag
+            "dag1Eller17": ${if (navOvertarAnsvarForVentetid) 1 else 17}
         }
     """) as ObjectNode
 }
