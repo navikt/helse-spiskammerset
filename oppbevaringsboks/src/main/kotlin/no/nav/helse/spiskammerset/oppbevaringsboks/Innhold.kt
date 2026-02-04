@@ -10,7 +10,7 @@ data class Versjon(val nummer: Int) {
     }
 }
 
-class Innhold(
+data class Innhold(
     val versjon: Versjon,
     val json: ObjectNode
 )

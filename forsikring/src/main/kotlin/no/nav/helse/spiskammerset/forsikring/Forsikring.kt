@@ -17,7 +17,7 @@ data class Forsikring(val dekningsgrad: Int, val navOvertarAnsvarForVentetid: Bo
         {
             "dekningsgrad": $dekningsgrad,
             "navOvertarAnsvarForVentetid": $navOvertarAnsvarForVentetid,
-            "premiegrunnlag: $premiegrunnlag
+            "premiegrunnlag": $premiegrunnlag
         }
     """) as ObjectNode
 }

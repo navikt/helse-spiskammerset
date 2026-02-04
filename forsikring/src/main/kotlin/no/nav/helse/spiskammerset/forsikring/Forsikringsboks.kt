@@ -9,11 +9,12 @@ data object Forsikringsboks: Oppbevaringsboks {
     private val gjeldendeVersjon = Versjon(1)
 
     override fun leggPå(hyllenummer: Hyllenummer, json: ObjectNode, connection: Connection): Innholdsstatus {
+        val forsikringJson = json["forsikring"] ?: return Innholdsstatus.UendretInnhold
         val dao = ForsikringDao(connection)
         val forsikring = Forsikring(
-            dekningsgrad = json.path("dekningsgrad").asInt(),
-            navOvertarAnsvarForVentetid = json.path("navOvertarAnsvarForVentetid").asBoolean(),
-            premiegrunnlag = json.path("premiegrunnlag").asInt(),
+            dekningsgrad = forsikringJson["dekningsgrad"].asInt(),
+            navOvertarAnsvarForVentetid = forsikringJson["navOvertarAnsvarForVentetid"].asBoolean(),
+            premiegrunnlag = forsikringJson["premiegrunnlag"].asInt(),
             versjon = gjeldendeVersjon
         )
 

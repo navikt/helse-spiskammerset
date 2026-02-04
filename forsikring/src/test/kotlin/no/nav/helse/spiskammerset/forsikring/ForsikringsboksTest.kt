@@ -1,0 +1,52 @@
+package no.nav.helse.spiskammerset.forsikring
+
+import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.navikt.tbd_libs.sql_dsl.connection
+import no.nav.helse.spiskammerset.oppbevaringsboks.Hyllenummer
+import no.nav.helse.spiskammerset.oppbevaringsboks.Innhold
+import no.nav.helse.spiskammerset.oppbevaringsboks.Versjon
+import org.intellij.lang.annotations.Language
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+
+internal class ForsikringsboksTest {
+
+    @Test
+    fun `henter ut forsikringsinformasjon fra benyttet_grunnlagsdata_for_beregning`() = databaseTest { dataSource ->
+        dataSource.connection {
+            Forsikringsboks.leggPå(Hyllenummer(1), innJson(100, true, 500_000), this)
+
+            val hentetInnhold = Forsikringsboks.taNedFra(Hyllenummer(1), this)
+            val forventetInnhold = Innhold(Versjon(1), utJson(100, true, 500_000))
+            assertEquals(forventetInnhold, hentetInnhold)
+        }
+    }
+
+    private fun innJson(dekningsgrad: Int, navOvertarAnsvarForVentetid: Boolean, premiegrunnlag: Int, eventName: String = "benyttet_grunnlagsdata_for_beregning"): ObjectNode {
+        @Language("JSON")
+        val json = """
+        {
+            "@event_name": "$eventName",
+            "forsikring": {
+                "dekningsgrad": $dekningsgrad,
+                "navOvertarAnsvarForVentetid": $navOvertarAnsvarForVentetid,
+                "premiegrunnlag": $premiegrunnlag
+            }
+        }
+        """
+        return jacksonObjectMapper().readTree(json) as ObjectNode
+    }
+
+    private fun utJson(dekningsgrad: Int, navOvertarAnsvarForVentetid: Boolean, premiegrunnlag: Int): ObjectNode {
+        @Language("JSON")
+        val json = """
+        {
+            "dekningsgrad": $dekningsgrad,
+            "navOvertarAnsvarForVentetid": $navOvertarAnsvarForVentetid,
+            "premiegrunnlag": $premiegrunnlag
+        }
+        """
+        return jacksonObjectMapper().readTree(json) as ObjectNode
+    }
+}
