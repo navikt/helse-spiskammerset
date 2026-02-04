@@ -1,9 +1,9 @@
 package no.nav.helse.spiskammerset.forsikring
 
 import com.github.navikt.tbd_libs.sql_dsl.boolean
+import com.github.navikt.tbd_libs.sql_dsl.firstOrNull
 import com.github.navikt.tbd_libs.sql_dsl.int
 import com.github.navikt.tbd_libs.sql_dsl.prepareStatementWithNamedParameters
-import com.github.navikt.tbd_libs.sql_dsl.singleOrNull
 import no.nav.helse.spiskammerset.oppbevaringsboks.Hyllenummer
 import no.nav.helse.spiskammerset.oppbevaringsboks.Versjon
 import org.intellij.lang.annotations.Language
@@ -39,7 +39,7 @@ internal class ForsikringDao(private val connection: Connection) {
 
         return connection.prepareStatementWithNamedParameters(query) {
             withParameter("hyllenummer", hyllenummer.nummer)
-        }.singleOrNull {
+        }.firstOrNull {
             Forsikring(
                 dekningsgrad = it.int("dekningsgrad"),
                 navOvertarAnsvarForVentetid = it.boolean("nav_overtar_ansvar_for_ventetid"),

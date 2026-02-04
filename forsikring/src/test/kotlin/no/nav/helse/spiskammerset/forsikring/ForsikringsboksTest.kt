@@ -10,6 +10,7 @@ import no.nav.helse.spiskammerset.oppbevaringsboks.Versjon
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNull
 
 internal class ForsikringsboksTest {
 
@@ -30,6 +31,15 @@ internal class ForsikringsboksTest {
             val status = Forsikringsboks.leggPå(Hyllenummer(1), innJson(100, true, 500_000, "mjau"), this)
 
             assertEquals(Innholdsstatus.UendretInnhold, status)
+        }
+    }
+
+    @Test
+    fun `får ingenting når det ikke finnes noe på hylla`() = databaseTest { dataSource ->
+        dataSource.connection {
+            val hentetInnhold = Forsikringsboks.taNedFra(Hyllenummer(1), this)
+
+            assertNull(hentetInnhold)
         }
     }
 
