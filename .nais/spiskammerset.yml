@@ -1,0 +1,58 @@
+apiVersion: nais.io/v1alpha1
+kind: Application
+metadata:
+  name: spiskammerset
+  namespace: tbd
+  labels:
+    team: tbd
+spec:
+  image: {{image}}
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_18
+        diskAutoresize: true
+        tier: {{tier}}
+        name: spiskammerset
+        databases:
+          - name: spiskammerset
+            envVarPrefix: DATABASE
+  strategy:
+    type: RollingUpdate
+  replicas:
+    min: 2
+    max: 12
+  liveness:
+    path: /isalive
+  readiness:
+    path: /isready
+    periodSeconds: 1
+  preStopHook:
+    http:
+      path: /stop
+  resources:
+    limits:
+      memory: 1024Mi
+  prometheus:
+    path: /metrics
+    enabled: true
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
+    logging:
+      destinations:
+        - id: elastic
+        - id: loki
+  azure:
+    application:
+      enabled: true
+      tenant: {{tenant}}
+  accessPolicy:
+    outbound:
+      rules:
+        - application: logging
+          namespace: nais-system
+  ingresses:
+    {{#each ingresses }}
+    - "{{this}}"
+    {{/each}}
