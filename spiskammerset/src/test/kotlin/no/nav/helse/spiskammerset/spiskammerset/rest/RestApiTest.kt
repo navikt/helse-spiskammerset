@@ -1,4 +1,4 @@
-package no.nav.helse.spiskammerset.spiskammerset
+package no.nav.helse.spiskammerset.spiskammerset.rest
 
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -6,7 +6,9 @@ import com.github.navikt.tbd_libs.naisful.test.naisfulTestApp
 import com.github.navikt.tbd_libs.signed_jwt_issuer_test.Issuer
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import no.nav.helse.spiskammerset.spiskammerset.databaseContainer
 import no.nav.helse.spiskammerset.spiskammerset.db.DataSourceBuilder
+import no.nav.helse.spiskammerset.spiskammerset.spiskammerset
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
@@ -28,7 +30,7 @@ internal abstract class RestApiTest {
         databaseContainer.droppTilkobling(testDataSource)
     }
 
-    protected fun spiskammersetTestApp(testblokk: suspend RestApiTestContext.() -> Unit) {
+    protected fun restApiTest(testblokk: suspend RestApiTestContext.() -> Unit) {
         naisfulTestApp(
             testApplicationModule = {
                 spiskammerset(

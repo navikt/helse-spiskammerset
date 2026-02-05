@@ -1,4 +1,4 @@
-package no.nav.helse.spiskammerset.spiskammerset
+package no.nav.helse.spiskammerset.spiskammerset.rest
 
 import com.github.navikt.tbd_libs.signed_jwt_issuer_test.Issuer
 import io.ktor.client.*
