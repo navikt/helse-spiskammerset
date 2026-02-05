@@ -1,0 +1,5 @@
+{
+  "kafkaPool": "nav-dev",
+  "tenant": "nav.no",
+  "consumerGroupId": "tbd-spiskammerset-v1"
+}

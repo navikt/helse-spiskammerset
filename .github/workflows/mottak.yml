@@ -40,3 +40,18 @@ jobs:
           docker_context: mottak
     outputs:
       image: ${{ steps.docker-build-push.outputs.image }}
+
+  deployDev:
+    name: deploy to dev
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: dev-gcp
+          RESOURCE: .nais/mottak.yml
+          VARS: .nais/mottak-dev.json
+          IMAGE: ${{ needs.build.outputs.image }}
