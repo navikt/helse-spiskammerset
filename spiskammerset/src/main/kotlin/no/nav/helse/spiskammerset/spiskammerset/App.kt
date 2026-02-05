@@ -19,11 +19,11 @@ import no.nav.helse.spiskammerset.oppbevaringsboks.Oppbevaringsboks
 import no.nav.helse.spiskammerset.spiskammerset.db.DataSourceBuilder
 import no.nav.helse.spiskammerset.spiskammerset.db.DefaultDataSourceBuilder
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.Hendelsehåndterer
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.allePerioder
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.forsikringForBehandling
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.hendelse
+import no.nav.helse.spiskammerset.spiskammerset.reisverk.perioderApi
+import no.nav.helse.spiskammerset.spiskammerset.reisverk.hendelseApi
 import org.slf4j.LoggerFactory
 import java.net.URI
+import no.nav.helse.spiskammerset.spiskammerset.reisverk.oppbevaringsbokserApi
 
 private val logg = LoggerFactory.getLogger(::main.javaClass)
 internal val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
@@ -86,9 +86,11 @@ internal fun Application.spiskammerset(
 
     routing {
         authenticate("spissmus") {
-            allePerioder(dataSource)
-            forsikringForBehandling(dataSource)
+            perioderApi(dataSource)
+            oppbevaringsbokserApi(dataSource, oppbevaringsbokser)
         }
-        authenticate("husmor") { hendelse(hendelsehåndterer) }
+        authenticate("husmor") {
+            hendelseApi(hendelsehåndterer)
+        }
     }
 }

@@ -5,11 +5,12 @@ import no.nav.helse.spiskammerset.spiskammerset.reisverk.BehandlingId
 import org.junit.jupiter.api.Test
 import java.util.*
 import kotlin.test.assertEquals
+import org.intellij.lang.annotations.Language
 
 internal class ApiTest : RestApiTest() {
 
     @Test
-    fun `prøver å hente forsikring for behandling som ikke har forsikring`() = spiskammersetTestApp {
+    fun `prøver å hente forsikring for behandling som ikke finnes`() = spiskammersetTestApp {
         val id = UUID.randomUUID()
         hentForsikring(
             behandlingId = BehandlingId(id),
@@ -19,6 +20,26 @@ internal class ApiTest : RestApiTest() {
             }
         )
     }
+
+    @Test
+    fun `prøver å hente forsikring for behandling som ikke har forsikring`() = spiskammersetTestApp {
+        val id = UUID.randomUUID()
+
+        lagreHendelse(
+            jsonBody = benyttetGrunnlagsdataForBeregning(id, "mjau"),
+            assertResponse = { status, _ ->
+                assertEquals(HttpStatusCode.NoContent, status)
+            }
+        )
+
+        hentForsikring(
+            behandlingId = BehandlingId(id),
+            assertResponse = { status, _ ->
+                assertEquals(HttpStatusCode.NoContent, status)
+            }
+        )
+    }
+
 
     @Test
     fun `prøver å hente forsikring med feil rolle`() = spiskammersetTestApp {
@@ -35,25 +56,9 @@ internal class ApiTest : RestApiTest() {
     @Test
     fun `henter ut forsikring`() = spiskammersetTestApp {
         val id = UUID.randomUUID()
-        val hendelse = """ {
-           "@event_name": "benyttet_grunnlagsdata_for_beregning",
-            "@id": "${UUID.randomUUID()}",
-            "fødselsnummer": "11111111111",
-            "vedtaksperiodeId": "${UUID.randomUUID()}",
-            "behandlingId": "$id",
-            "fom": "2018-01-01",
-            "tom": "2018-01-31",
-            "yrkesaktivitetstype": "SELVSTENDIG",
-            "forsikring": {
-                "dekningsgrad": 100,
-                "navOvertarAnsvarForVentetid": true,
-                "premiegrunnlag": 500000
-            }
-        }
-        """
 
         lagreHendelse(
-            jsonBody = hendelse,
+            jsonBody = benyttetGrunnlagsdataForBeregning(id),
             assertResponse = { status, _ ->
                 assertEquals(HttpStatusCode.NoContent, status)
             }
@@ -74,4 +79,22 @@ internal class ApiTest : RestApiTest() {
             }
         )
     }
+
+    @Language("JSON")
+    private fun benyttetGrunnlagsdataForBeregning(behandlingId: UUID, forsikringKey: String = "forsikring") = """ {
+       "@event_name": "benyttet_grunnlagsdata_for_beregning",
+        "@id": "${UUID.randomUUID()}",
+        "fødselsnummer": "11111111111",
+        "vedtaksperiodeId": "${UUID.randomUUID()}",
+        "behandlingId": "${behandlingId}",
+        "fom": "2018-01-01",
+        "tom": "2018-01-31",
+        "yrkesaktivitetstype": "SELVSTENDIG",
+        "$forsikringKey": {
+            "dekningsgrad": 100,
+            "navOvertarAnsvarForVentetid": true,
+            "premiegrunnlag": 500000
+        }
+    }
+    """
 }
