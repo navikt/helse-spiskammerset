@@ -1,0 +1,41 @@
+name: build spiskammerset
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'spiskammerset/**'
+      - '.github/workflows/spiskammerset.yml'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+      - 'spiskammerset.yml'
+      - '.nais/spiskammerset.yml'
+      - '.nais/spiskammerset-dev.json'
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21.x'
+          cache: 'gradle'
+      - name: gradle
+        run: ./gradlew :spiskammerset:build
+        env:
+          ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
+      - name: build docker image
+        uses: nais/docker-build-push@v0
+        id: docker-build-push
+        with:
+          team: tbd
+          dockerfile: Dockerfile
+          docker_context: spiskammerset
+    outputs:
+      image: ${{ steps.docker-build-push.outputs.image }}
