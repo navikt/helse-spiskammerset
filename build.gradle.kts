@@ -53,7 +53,7 @@ subprojects {
     }
 
     tasks {
-        if (project.name in setOf("spisskammerset", "mottak")) {
+        if (project.name in setOf("spiskammerset", "mottak")) {
             withType<Jar> {
                 archiveBaseName.set("app")
 
