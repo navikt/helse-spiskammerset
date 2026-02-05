@@ -14,6 +14,8 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
 import javax.sql.DataSource
+import no.nav.helse.spiskammerset.oppbevaringsboks.Innhold
+import no.nav.helse.spiskammerset.oppbevaringsboks.Innhold.Companion.tilJson
 import no.nav.helse.spiskammerset.oppbevaringsboks.Oppbevaringsboks
 
 private val objectmapper = jacksonObjectMapper()
@@ -52,6 +54,32 @@ internal fun Route.oppbevaringsbokserApi(dataSource: DataSource, oppbevaringsbok
                 sikkerlogg.error("Feil ved henting av ${oppbevaringsboks.etikett}", error)
                 call.respond(HttpStatusCode.InternalServerError, "Nå har det gått til skogen")
             }
+        }
+    }
+
+    get("/behandling/{behandlingId}") {
+        val etterspurteOpplysninger = (call.queryParameters.getAll("opplysning")?.toSet() ?: emptySet())
+        val behandlingId = BehandlingId.fraStreng(call.parameters["behandlingId"]) ?: return@get call.respond(HttpStatusCode.BadRequest, "Melding uten behandlingId blir litt rart, eller?")
+
+        try {
+
+            val etterspurteOppbevaringsbokser = etterspurteOpplysninger.mapNotNull { etikett -> oppbevaringsbokser.firstOrNull { it.etikett == etikett } }
+
+            val (hyllenummer, altInnhold) = dataSource.connection {
+                val hyllenummer = finnHyllenummer(behandlingId) ?: return@connection null to emptyMap<String, Innhold?>()
+                hyllenummer to etterspurteOppbevaringsbokser.associate { etterspurtOppbevaringsboks ->
+                    etterspurtOppbevaringsboks.etikett to etterspurtOppbevaringsboks.taNedFra(hyllenummer, this)
+                }
+            }
+
+            if (hyllenummer == null) {
+                return@get call.respond(HttpStatusCode.NotFound, """{ "feilmelding": "Fant ikke behandling med behandlingId: $behandlingId" }""")
+            }
+
+            call.respond(HttpStatusCode.OK, altInnhold.tilJson())
+        } catch (error: Exception) {
+            sikkerlogg.error("Feil ved henting av $etterspurteOpplysninger for behandlingId ${behandlingId.id}", error)
+            call.respond(HttpStatusCode.InternalServerError, "Nå har det gått til skogen")
         }
     }
 }

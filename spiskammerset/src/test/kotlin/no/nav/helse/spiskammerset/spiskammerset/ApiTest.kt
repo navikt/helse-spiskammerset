@@ -11,6 +11,38 @@ import kotlin.test.assertEquals
 internal class ApiTest : RestApiTest() {
 
     @Test
+    fun `Hente ut kun opplysninger man spør om`() = spiskammersetTestApp {
+        val id = UUID.randomUUID()
+
+        lagreHendelse(
+            jsonBody = benyttetGrunnlagsdataForBeregning(id),
+            assertResponse = { status, _ ->
+                assertEquals(HttpStatusCode.NoContent, status)
+            }
+        )
+
+        @Language("JSON")
+        val forventetForsikring = """
+        {
+              "forsikring": {
+                "dekningsgrad": 100,
+                "dag1Eller17": 1,
+                "versjon": 1
+            }
+        }
+        """
+
+        hentOpplysninger(
+            behandlingId = BehandlingId(id),
+            opplysninger = setOf("forsikring"),
+            assertResponse = { status, response ->
+                assertEquals(HttpStatusCode.OK, status)
+                assertJsonEquals(forventetForsikring, response)
+            }
+        )
+    }
+
+    @Test
     fun `prøver å hente forsikring for behandling som ikke finnes`() = spiskammersetTestApp {
         val id = UUID.randomUUID()
         hentForsikring(

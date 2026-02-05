@@ -30,6 +30,19 @@ internal data class RestApiTestContext(
         assertResponse(response.status, response.bodyAsText())
     }
 
+    suspend fun hentOpplysninger(
+        behandlingId: BehandlingId,
+        accessToken: String = spiskammersetAccessToken("spissmus"),
+        opplysninger: Set<String> = emptySet(),
+        assertResponse: (status: HttpStatusCode, respondeBody: String) -> Unit
+    ) {
+        val response = client.get("/behandling/$behandlingId") {
+            opplysninger.forEach { opplysning -> parameter("opplysning", opplysning) }
+            header("Authorization", "Bearer $accessToken")
+        }
+        assertResponse(response.status, response.bodyAsText())
+    }
+
     suspend fun lagreHendelse(
         jsonBody: String,
         accessToken: String = spiskammersetAccessToken("husmor"),
