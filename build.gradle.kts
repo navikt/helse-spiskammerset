@@ -4,7 +4,8 @@ val junitJupiterVersion = "5.12.1"
 val tbdLibsVersion = "2026.01.22-09.16-1d3f6039"
 val rapidsAndRiversVersion = "2026011411051768385145.e8ebad1177b4"
 val jacksonVersion = "2.18.3"
-
+val hikariCPVersion = "6.3.0"
+val jsonAssertVersion = "1.5.3"
 
 plugins {
     kotlin("jvm") version "2.2.21" apply false
@@ -35,6 +36,8 @@ subprojects {
     ext.set("tbdLibsVersion", tbdLibsVersion)
     ext.set("rapidsAndRiversVersion", rapidsAndRiversVersion)
     ext.set("jacksonVersion", jacksonVersion)
+    ext.set("jsonAssertVersion", jsonAssertVersion)
+    ext.set("hikariCPVersion", hikariCPVersion)
 
     val testImplementation by configurations
     val testRuntimeOnly by configurations

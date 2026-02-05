@@ -1,6 +1,9 @@
 package no.nav.helse.spiskammerset.oppbevaringsboks
 
-import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 
 data class Hyllenummer(val nummer: Long)
 
@@ -12,9 +15,16 @@ data class Versjon(val nummer: Int) {
 
 data class Innhold(
     val versjon: Versjon,
-    val json: ObjectNode
+    val innhold: Map<String, Any?>
 ) {
-    fun tilJson() = json.put("versjon", versjon.nummer).toString()
+    fun tilJson() = mapper.writeValueAsString(innhold.plus("versjon" to versjon.nummer))
+
+    private companion object {
+        val mapper = jacksonObjectMapper()
+            .registerModule(JavaTimeModule())
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+    }
 }
 
 sealed interface Innholdsstatus {

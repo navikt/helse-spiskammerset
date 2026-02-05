@@ -11,6 +11,7 @@ import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNull
+import org.skyscreamer.jsonassert.JSONAssert
 
 internal class ForsikringsboksTest {
 
@@ -20,8 +21,7 @@ internal class ForsikringsboksTest {
             Forsikringsboks.leggPå(Hyllenummer(1), innJson(100, true, 500_000), this)
 
             val hentetInnhold = Forsikringsboks.taNedFra(Hyllenummer(1), this)
-            val forventetInnhold = Innhold(Versjon(1), utJson(100, 1))
-            assertEquals(forventetInnhold, hentetInnhold)
+            assertLikJsonInnhold(utInnhold(100,1), hentetInnhold)
         }
     }
 
@@ -68,14 +68,12 @@ internal class ForsikringsboksTest {
         return jacksonObjectMapper().readTree(json) as ObjectNode
     }
 
-    private fun utJson(dekningsgrad: Int, dag1Eller17: Int): ObjectNode {
-        @Language("JSON")
-        val json = """
-        {
-            "dekningsgrad": $dekningsgrad,
-            "dag1Eller17": $dag1Eller17
-        }
-        """
-        return jacksonObjectMapper().readTree(json) as ObjectNode
+    private fun utInnhold(dekningsgrad: Int, dag1Eller17: Int) = Innhold(versjon = Versjon(1), innhold = mapOf(
+        "dekningsgrad" to dekningsgrad,
+        "dag1Eller17" to dag1Eller17
+    ))
+
+    private fun assertLikJsonInnhold(expected: Innhold, actual: Innhold?) {
+        JSONAssert.assertEquals(expected.tilJson(), actual?.tilJson(), true)
     }
 }
