@@ -8,15 +8,15 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import no.nav.helse.spiskammerset.oppbevaringsboks.Innhold
+import no.nav.helse.spiskammerset.oppbevaringsboks.Innhold.Companion.tilJson
+import no.nav.helse.spiskammerset.oppbevaringsboks.Oppbevaringsboks
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.SvaretViGir.Yrkesaktivitet.Vedtaksperioder
 import no.nav.helse.spiskammerset.spiskammerset.sikkerlogg
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
 import javax.sql.DataSource
-import no.nav.helse.spiskammerset.oppbevaringsboks.Innhold
-import no.nav.helse.spiskammerset.oppbevaringsboks.Innhold.Companion.tilJson
-import no.nav.helse.spiskammerset.oppbevaringsboks.Oppbevaringsboks
 
 private val objectmapper = jacksonObjectMapper()
 private suspend fun ApplicationCall.json() = objectmapper.readTree(receiveText()) as ObjectNode
@@ -25,7 +25,7 @@ internal fun Route.hendelseApi(hendelsehåndterer: Hendelsehåndterer) {
     post("/hendelse") {
         try {
             hendelsehåndterer.håndter(call.json())
-            call.respond(HttpStatusCode.NoContent, "Må man ha message på status. rart..")
+            call.respond(HttpStatusCode.NoContent)
         } catch (_: Exception) {
             call.respond(HttpStatusCode.InternalServerError, "Nå har det gått til skogen")
         }
