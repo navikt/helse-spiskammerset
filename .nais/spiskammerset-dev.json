@@ -1,5 +1,4 @@
 {
   "ingresses": ["https://spiskammerset.intern.dev.nav.no"],
-  "tenant": "nav.no",
   "tier": "db-f1-micro"
 }
