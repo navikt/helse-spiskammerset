@@ -25,7 +25,7 @@ internal class SpiskammersetKlient(
             endepunkt = "hendelse",
             requestBody = packet.toJson(),
             callId = UUID.fromString(packet["@id"].asText()),
-            forventetResponseCode = 201
+            forventetResponseCode = 204
         )
     }
 
