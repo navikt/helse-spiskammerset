@@ -17,6 +17,8 @@
 
     <logger name="tjenestekall" level="INFO" />
 
+    <logger name="io.ktor.auth.jwt" level="TRACE" />
+
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
     </root>

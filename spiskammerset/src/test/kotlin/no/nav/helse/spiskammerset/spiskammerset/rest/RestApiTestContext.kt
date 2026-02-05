@@ -14,14 +14,15 @@ internal data class RestApiTestContext(
     private val issuer: Issuer,
     private val client: HttpClient
 ) {
-    fun spiskammersetAccessToken(rolle: String?) = issuer.accessToken {
+    fun spiskammersetMaskinAccessToken(rolle: String?) = issuer.accessToken {
         rolle?.let { withArrayClaim("roles", arrayOf(rolle, "${UUID.randomUUID()}")) }
         withClaim("azp_name", "${UUID.randomUUID()}")
+        withClaim("idtyp", "app")
     }
 
     suspend fun hentOpplysning(
         behandlingId: BehandlingId,
-        accessToken: String = spiskammersetAccessToken("spissmus"),
+        accessToken: String = spiskammersetMaskinAccessToken("spissmus"),
         opplysning: String,
         assertResponse: (status: HttpStatusCode, respondeBody: String) -> Unit
     ) {
@@ -33,7 +34,7 @@ internal data class RestApiTestContext(
 
     suspend fun hentOpplysninger(
         behandlingId: BehandlingId,
-        accessToken: String = spiskammersetAccessToken("spissmus"),
+        accessToken: String = spiskammersetMaskinAccessToken("spissmus"),
         opplysninger: Set<String> = emptySet(),
         assertResponse: (status: HttpStatusCode, respondeBody: String) -> Unit
     ) {
@@ -46,7 +47,7 @@ internal data class RestApiTestContext(
 
     suspend fun lagreHendelse(
         jsonBody: String,
-        accessToken: String = spiskammersetAccessToken("husmor"),
+        accessToken: String = spiskammersetMaskinAccessToken("husmor"),
         assertResponse: (status: HttpStatusCode, responseBody: String) -> Unit
     ) {
         val response = client.post("/hendelse") {
