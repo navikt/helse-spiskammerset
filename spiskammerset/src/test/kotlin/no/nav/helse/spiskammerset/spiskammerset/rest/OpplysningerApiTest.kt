@@ -1,134 +1,149 @@
 package no.nav.helse.spiskammerset.spiskammerset.rest
 
 import io.ktor.http.HttpStatusCode
+import java.time.OffsetDateTime
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.BehandlingId
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
-import java.time.OffsetDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
 
 internal class OpplysningerApiTest : RestApiTest() {
 
     @Test
-    fun `Hente ut kun opplysninger man spør om`() = restApiTest {
-        val id = UUID.randomUUID()
+    fun `Hente ut kun fler opplysninger om gangen`() = restApiTest {
+        val behandlingId = BehandlingId(UUID.randomUUID())
 
         lagreHendelse(
-            jsonBody = benyttetGrunnlagsdataForBeregning(id),
+            jsonBody = testEvent("test_event_1", behandlingId, "en kjempekul verdi"),
             assertResponse = { status, _ ->
-                assertEquals(HttpStatusCode.Companion.NoContent, status)
+                assertEquals(HttpStatusCode.NoContent, status)
+            }
+        )
+
+        // sender ikke test_event_2
+
+        lagreHendelse(
+            jsonBody = testEvent("test_event_3", behandlingId, "mjau"),
+            assertResponse = { status, _ ->
+                assertEquals(HttpStatusCode.NoContent, status)
             }
         )
 
         @Language("JSON")
-        val forventetForsikring = """
+        val forventetResponse = """
         {
-              "forsikring": {
-                "dekningsgrad": 100,
-                "dag1Eller17": 1,
-                "versjon": 1
+            "info1": {
+              "verdien": "en kjempekul verdi",
+              "epoch": "1970-01-01T00:00:00",
+              "versjon": 5
+            },
+            "info2": null,
+            "info3": {
+              "verdien": "mjau",
+              "epoch": "1970-01-01T00:00:00",
+              "versjon": 5
             }
         }
         """
 
         hentOpplysninger(
-            behandlingId = BehandlingId(id),
-            opplysninger = setOf("forsikring"),
+            behandlingId = behandlingId,
+            opplysninger = setOf("info1", "info2", "info3"),
             assertResponse = { status, response ->
-                assertEquals(HttpStatusCode.Companion.OK, status)
-                assertJsonEquals(forventetForsikring, response)
+                assertEquals(HttpStatusCode.OK, status)
+                assertJsonEquals(forventetResponse, response)
             }
         )
     }
 
     @Test
-    fun `prøver å hente forsikring for behandling som ikke finnes`() = restApiTest {
-        val id = UUID.randomUUID()
-        hentForsikring(
-            behandlingId = BehandlingId(id),
+    fun `prøver å hente opplysning for behandling som ikke finnes`() = restApiTest {
+        val behandlingId = BehandlingId(UUID.randomUUID())
+
+        hentOpplysning(
+            behandlingId = behandlingId,
+            opplysning = "info1",
             assertResponse = { status, responseBody ->
-                assertEquals(HttpStatusCode.Companion.NotFound, status)
-                assertJsonEquals("""{ "feilmelding": "Fant ikke forsikring for behandlingId: $id" }""", responseBody)
+                assertEquals(HttpStatusCode.NotFound, status)
+                assertJsonEquals("""{ "feilmelding": "Fant ikke info1 for behandlingId: $behandlingId" }""", responseBody)
             }
         )
     }
 
     @Test
-    fun `prøver å hente forsikring for behandling som ikke har forsikring`() = restApiTest {
-        val id = UUID.randomUUID()
+    fun `prøver å hente opplysning for behandling som ikke har opplysninger om det`() = restApiTest {
+        val behandlingId = BehandlingId(UUID.randomUUID())
 
         lagreHendelse(
-            jsonBody = benyttetGrunnlagsdataForBeregning(id, "mjau"),
+            jsonBody = testEvent("test_event_1", behandlingId, null),
             assertResponse = { status, _ ->
-                assertEquals(HttpStatusCode.Companion.NoContent, status)
+                assertEquals(HttpStatusCode.NoContent, status)
             }
         )
 
-        hentForsikring(
-            behandlingId = BehandlingId(id),
+        hentOpplysning(
+            behandlingId = behandlingId,
+            opplysning = "info2",
             assertResponse = { status, _ ->
-                assertEquals(HttpStatusCode.Companion.NoContent, status)
+                assertEquals(HttpStatusCode.NoContent, status)
             }
         )
     }
 
 
     @Test
-    fun `prøver å hente forsikring med feil rolle`() = restApiTest {
-        val id = UUID.randomUUID()
-        hentForsikring(
-            behandlingId = BehandlingId(id),
+    fun `prøver å hente opplysning med feil rolle`() = restApiTest {
+        hentOpplysning(
+            behandlingId = BehandlingId(UUID.randomUUID()),
+            opplysning = "info3",
             accessToken = spiskammersetAccessToken("grevling"),
             assertResponse = { status, _ ->
-                assertEquals(HttpStatusCode.Companion.Unauthorized, status)
+                assertEquals(HttpStatusCode.Unauthorized, status)
             }
         )
     }
 
     @Test
-    fun `henter ut forsikring`() = restApiTest {
-        val id = UUID.randomUUID()
+    fun `henter ut en opplysning`() = restApiTest {
+        val behandlingId = BehandlingId(UUID.randomUUID())
 
         lagreHendelse(
-            jsonBody = benyttetGrunnlagsdataForBeregning(id),
+            jsonBody = testEvent("test_event_2", behandlingId, "du skulle bare visst hvor kul verdi jeg er!"),
             assertResponse = { status, _ ->
-                assertEquals(HttpStatusCode.Companion.NoContent, status)
+                assertEquals(HttpStatusCode.NoContent, status)
             }
         )
 
-        val forventetForsikring = """
+        val forventetResponse = """
             {
-                "dekningsgrad": 100,
-                "dag1Eller17": 1,
-                "versjon": 1
+                "verdien": "du skulle bare visst hvor kul verdi jeg er!",
+                "epoch": "1970-01-01T00:00:00",
+                "versjon": 5
             }
         """
-        hentForsikring(
-            behandlingId = BehandlingId(id),
+        hentOpplysning(
+            behandlingId = behandlingId,
+            opplysning = "info2",
             assertResponse = { status, response ->
-                assertEquals(HttpStatusCode.Companion.OK, status)
-                assertJsonEquals(forventetForsikring, response)
+                assertEquals(HttpStatusCode.OK, status)
+                assertJsonEquals(forventetResponse, response)
             }
         )
     }
 
     @Language("JSON")
-    private fun benyttetGrunnlagsdataForBeregning(behandlingId: UUID, forsikringKey: String = "forsikring") = """ {
-       "@event_name": "benyttet_grunnlagsdata_for_beregning",
+    private fun testEvent(eventName: String, behandlingId: BehandlingId, verdien: String?) = """ {
+        "@event_name": "$eventName",
         "@id": "${UUID.randomUUID()}",
         "fødselsnummer": "11111111111",
         "vedtaksperiodeId": "${UUID.randomUUID()}",
-        "behandlingId": "${behandlingId}",
+        "behandlingId": "${behandlingId.id}",
         "fom": "2018-01-01",
         "tom": "2018-01-31",
         "yrkesaktivitetstype": "SELVSTENDIG",
-        "$forsikringKey": {
-            "dekningsgrad": 100,
-            "navOvertarAnsvarForVentetid": true,
-            "premiegrunnlag": 500000
-        },
-        "behandlingOpprettet": "${OffsetDateTime.now()}"
+        ${if (verdien != null) """"verdien": "$verdien",""" else ""}
+        "behandlingOpprettet": "${OffsetDateTime.MIN}"
     }
     """
 }

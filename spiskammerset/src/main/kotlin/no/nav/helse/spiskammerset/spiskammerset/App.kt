@@ -65,7 +65,8 @@ fun main() {
 
 internal fun Application.spiskammerset(
     env: Map<String, String>,
-    dataSourceBuilder: DataSourceBuilder = DefaultDataSourceBuilder(env)
+    dataSourceBuilder: DataSourceBuilder = DefaultDataSourceBuilder(env),
+    oppbevaringsbokser: List<Oppbevaringsboks> = listOf<Oppbevaringsboks>(Forsikringsboks)
 ) {
     val azureApp = AzureApp(
         jwkProvider = JwkProviderBuilder(URI(env.getValue("AZURE_OPENID_CONFIG_JWKS_URI")).toURL()).build(),
@@ -80,8 +81,6 @@ internal fun Application.spiskammerset(
     }
 
     val dataSource = dataSourceBuilder.dataSource
-
-    val oppbevaringsbokser = listOf<Oppbevaringsboks>(Forsikringsboks)
     val hendelsehåndterer = Hendelsehåndterer(dataSource, oppbevaringsbokser)
 
     routing {

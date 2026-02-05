@@ -42,6 +42,11 @@ internal abstract class RestApiTest {
                         "AZURE_OPENID_CONFIG_JWKS_URI" to "${issuer.jwksUri()}",
                         "AZURE_OPENID_CONFIG_ISSUER" to issuer.navn,
                         "AZURE_APP_CLIENT_ID" to issuer.audience
+                    ),
+                    oppbevaringsbokser = listOf(
+                        TestOppbevaringsboks(eventName = "test_event_1", etikett = "info1"),
+                        TestOppbevaringsboks(eventName = "test_event_2", etikett = "info2"),
+                        TestOppbevaringsboks(eventName = "test_event_3", etikett = "info3")
                     )
                 )
             },

@@ -19,12 +19,13 @@ internal data class RestApiTestContext(
         withClaim("azp_name", "${UUID.randomUUID()}")
     }
 
-    suspend fun hentForsikring(
+    suspend fun hentOpplysning(
         behandlingId: BehandlingId,
         accessToken: String = spiskammersetAccessToken("spissmus"),
+        opplysning: String,
         assertResponse: (status: HttpStatusCode, respondeBody: String) -> Unit
     ) {
-        val response = client.get("/behandling/$behandlingId/forsikring") {
+        val response = client.get("/behandling/$behandlingId/$opplysning") {
             header("Authorization", "Bearer $accessToken")
         }
         assertResponse(response.status, response.bodyAsText())
