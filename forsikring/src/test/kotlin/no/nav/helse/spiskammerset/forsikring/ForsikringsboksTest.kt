@@ -20,7 +20,7 @@ internal class ForsikringsboksTest {
             Forsikringsboks.leggPå(Hyllenummer(1), innJson(100, true, 500_000), this)
 
             val hentetInnhold = Forsikringsboks.taNedFra(Hyllenummer(1), this)
-            val forventetInnhold = Innhold(Versjon(1), utJson(100, true, 500_000))
+            val forventetInnhold = Innhold(Versjon(1), utJson(100, 1))
             assertEquals(forventetInnhold, hentetInnhold)
         }
     }
@@ -68,13 +68,12 @@ internal class ForsikringsboksTest {
         return jacksonObjectMapper().readTree(json) as ObjectNode
     }
 
-    private fun utJson(dekningsgrad: Int, navOvertarAnsvarForVentetid: Boolean, premiegrunnlag: Int): ObjectNode {
+    private fun utJson(dekningsgrad: Int, dag1Eller17: Int): ObjectNode {
         @Language("JSON")
         val json = """
         {
             "dekningsgrad": $dekningsgrad,
-            "navOvertarAnsvarForVentetid": $navOvertarAnsvarForVentetid,
-            "premiegrunnlag": $premiegrunnlag
+            "dag1Eller17": $dag1Eller17
         }
         """
         return jacksonObjectMapper().readTree(json) as ObjectNode
