@@ -19,6 +19,7 @@ fun main() {
     val consumerProducerFactory = ConsumerProducerFactory(kafkaConfig)
 
     RapidApplication.create(env, consumerProducerFactory = consumerProducerFactory).apply {
-        BenyttetGrunnlagsdataForBeregningRiver(this, spiskammersetKlient)
+        //BenyttetGrunnlagsdataForBeregningRiver(this, spiskammersetKlient)
+        BehandlingOpprettetRiver(this, spiskammersetKlient)
     }.start()
 }

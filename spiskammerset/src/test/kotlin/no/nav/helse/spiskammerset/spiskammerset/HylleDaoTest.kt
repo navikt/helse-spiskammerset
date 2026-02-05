@@ -1,22 +1,12 @@
 package no.nav.helse.spiskammerset.spiskammerset
 
-import java.time.LocalDate
-import java.util.UUID
-import kotlin.random.Random
-import kotlin.use
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.Behandling
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.BehandlingId
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.Hylle
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.Hyllestatus
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.Organisasjonsnummer
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.Periode
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.Personidentifikator
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.VedtaksperiodeId
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.Yrkesaktivitetstype
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.finnHyller
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.finnEllerOpprettHylle
+import no.nav.helse.spiskammerset.spiskammerset.reisverk.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.util.*
+import kotlin.random.Random
 
 class HylleDaoTest {
 
@@ -188,7 +178,8 @@ class HylleDaoTest {
         periode = Periode(fom, tom),
         yrkesaktivitetstype = Yrkesaktivitetstype("ARBEIDSTAKER"),
         organisasjonsnummer = Organisasjonsnummer("999999999"),
-        personidentifikator = personidentifikator
+        personidentifikator = personidentifikator,
+        opprettet = OffsetDateTime.MIN
     )
 
     private fun lagMinimalBehandling(behandlingId: BehandlingId, periode: Periode? = null, personidentifikator: Personidentifikator = enUnikPersonidentifikator()) = Behandling.MinimalBehandling(

@@ -3,7 +3,9 @@ package no.nav.helse.spiskammerset.spiskammerset.reisverk
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.time.ZoneId
 import java.util.*
 
 data class Personidentifikator(val id: String) {
@@ -54,7 +56,7 @@ sealed interface Behandling {
         val periode: Periode,
         val yrkesaktivitetstype: Yrkesaktivitetstype,
         val organisasjonsnummer: Organisasjonsnummer?,
-        val opprettet: OffsetDateTime = OffsetDateTime.MIN
+        val opprettet: OffsetDateTime
     ): Behandling
 
     // Inneholder kun referanse til behandlingen og det som kan endres på en behandling (per nå kun periode + endret personidentifikator da..)
@@ -72,6 +74,8 @@ data class Hendelse(
     val json: ObjectNode
 ) {
     companion object {
+        private val Oslo = ZoneId.of("Europe/Oslo")
+
         fun opprett(json: ObjectNode): Hendelse {
             return Hendelse(
                 hendelseId = HendelseId(UUID.fromString(json["@id"].asText())),
@@ -82,6 +86,14 @@ data class Hendelse(
                     false -> listOf(behandling(json))
                 }
             )
+        }
+
+        private fun behandlingOpprettetTidspunkt(json: JsonNode): OffsetDateTime {
+            if (json.hasNonNull("behandlingOpprettet")) return OffsetDateTime.parse(json["behandlingOpprettet"].asText())
+            check(json["@event_name"].asText() == "behandling_opprettet") { "Dette må vi huske på når vi migrerer inn behandlinger. Da kan vi ikke bruke @opprettet, det blir bare tull og tøys" }
+            return LocalDateTime.parse(json["@opprettet"].asText()).let {
+                OffsetDateTime.of(it, Oslo.rules.getOffset(it))
+            }
         }
 
         private fun behandling(json: JsonNode): Behandling {
@@ -99,7 +111,8 @@ data class Hendelse(
                 organisasjonsnummer = when (yrkesaktivitetstype.erArbeidstaker) {
                     true -> Organisasjonsnummer(json["organisasjonsnummer"].asText())
                     false -> null
-                }
+                },
+                opprettet = behandlingOpprettetTidspunkt(json)
             )
         }
     }

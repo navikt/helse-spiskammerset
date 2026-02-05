@@ -2,10 +2,11 @@ package no.nav.helse.spiskammerset.spiskammerset
 
 import io.ktor.http.*
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.BehandlingId
+import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
+import java.time.OffsetDateTime
 import java.util.*
 import kotlin.test.assertEquals
-import org.intellij.lang.annotations.Language
 
 internal class ApiTest : RestApiTest() {
 
@@ -94,7 +95,8 @@ internal class ApiTest : RestApiTest() {
             "dekningsgrad": 100,
             "navOvertarAnsvarForVentetid": true,
             "premiegrunnlag": 500000
-        }
+        },
+        "behandlingOpprettet": "${OffsetDateTime.now()}"
     }
     """
 }

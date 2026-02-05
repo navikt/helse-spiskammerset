@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.sql.Connection
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.*
 
 class HendelseDaoTest {
@@ -43,7 +44,8 @@ class HendelseDaoTest {
         periode = Periode(fom, tom),
         yrkesaktivitetstype = Yrkesaktivitetstype("SELVSTENDIG"),
         organisasjonsnummer = null,
-        personidentifikator = Personidentifikator("11111111111")
+        personidentifikator = Personidentifikator("11111111111"),
+        opprettet = OffsetDateTime.MIN
     )
 
     private fun Connection.hentJson(hendelseId: HendelseId): String {
