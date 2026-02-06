@@ -12,7 +12,9 @@ sealed interface Besøkende {
     val navn: String
 
     data class Spissmus(override val navn: String): Besøkende {
-        data class Hjelper(val spissmus: Spissmus, override val navn: String): Besøkende
+        data class Hjelper(val spissmus: Spissmus): Besøkende {
+            override val navn: String get() = error("Det er hemmelig!!! 100% hemmelig!!")
+        }
     }
     data class Husmor(override val navn: String): Besøkende
     data class Tyv(override val navn: String): Besøkende, Throwable() {
@@ -34,13 +36,10 @@ sealed interface Besøkende {
                 }
             }
 
-            val mellomnavn = payload.getClaim("name")?.asString()?.split(" ")?.lastOrNull() ?: throw Tyv(appnavn)
-            val ident = payload.getClaim("NAVident")?.asString() ?: throw Tyv("$mellomnavn sendt fra $appnavn")
+            payload.getClaim("name")?.asString()?.split(" ")?.lastOrNull() ?: throw Tyv("En 100% anonym tyv sendt fra $appnavn")
+            payload.getClaim("NAVident")?.asString() ?: throw Tyv("En 100% anonym tyv sendt fra $appnavn")
 
-            return Spissmus.Hjelper(
-                spissmus = Spissmus(appnavn),
-                navn = "$mellomnavn ($ident)"
-            )
+            return Spissmus.Hjelper(spissmus = Spissmus(appnavn))
         }
     }
 }
@@ -54,7 +53,7 @@ internal val Gjestebok =
             val denBesøkende = when (besøkende) {
                 is Besøkende.Husmor -> "Husmoren ${besøkende.navn}"
                 is Besøkende.Spissmus -> "Spissmusen ${besøkende.navn}"
-                is Besøkende.Spissmus.Hjelper -> "Spissmusen ${besøkende.spissmus.navn} sin hjelper ${besøkende.navn}"
+                is Besøkende.Spissmus.Hjelper -> "Spissmusen ${besøkende.spissmus.navn} sin 100% anonyme hjelper"
                 is Besøkende.Tyv -> throw besøkende
             }
 
