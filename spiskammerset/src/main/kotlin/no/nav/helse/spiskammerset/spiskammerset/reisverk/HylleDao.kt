@@ -14,7 +14,7 @@ data class Hylle(
     val periode: Periode,
     val yrkesaktivitetstype: Yrkesaktivitetstype,
     val organisasjonsnummer: Organisasjonsnummer?,
-    val opprettet: OffsetDateTime = OffsetDateTime.MIN
+    val opprettet: OffsetDateTime
 )
 
 sealed interface Hyllestatus {
@@ -41,8 +41,8 @@ internal fun Connection.finnHyllenummer(behandlingId: BehandlingId): Hyllenummer
 private fun Connection.finnEllerOpprettHylle(behandling: Behandling.KomplettBehandling): Hyllestatus {
     @Language("PostgreSQL")
     val sql = """
-        INSERT INTO hylle (vedtaksperiode_id, behandling_id, yrkesaktivitetstype, organisasjonsnummer, fom, tom) 
-        VALUES (:vedtaksperiodeId, :behandlingId, :yrkesaktivitetstype, :organisasjonsnummer, :fom, :tom) 
+        INSERT INTO hylle (vedtaksperiode_id, behandling_id, yrkesaktivitetstype, organisasjonsnummer, fom, tom, behandling_opprettet) 
+        VALUES (:vedtaksperiodeId, :behandlingId, :yrkesaktivitetstype, :organisasjonsnummer, :fom, :tom, :behandlingOpprettet) 
         ON CONFLICT ON CONSTRAINT unik_behandling_id DO NOTHING 
         RETURNING hyllenummer;
     """
@@ -55,6 +55,7 @@ private fun Connection.finnEllerOpprettHylle(behandling: Behandling.KomplettBeha
         else withParameter("organisasjonsnummer", behandling.organisasjonsnummer.organisasjonsnummer)
         withParameter("fom", behandling.periode.fom)
         withParameter("tom", behandling.periode.tom)
+        withParameter("behandlingOpprettet", behandling.opprettet)
     }.firstOrNull(ResultSet::hyllenummer) ?: return finnEllerOpprettHylle(Behandling.MinimalBehandling(
         behandlingId = behandling.behandlingId,
         periode = behandling.periode,
@@ -143,6 +144,7 @@ internal fun Connection.finnHyller(periode: Periode, vararg personidentifikatore
         behandlingId = BehandlingId(resultset.uuid("behandling_id")),
         periode = Periode(resultset.localDate("fom"), resultset.localDate("tom")),
         yrkesaktivitetstype = Yrkesaktivitetstype(resultset.string("yrkesaktivitetstype")),
-        organisasjonsnummer = resultset.stringOrNull("organisasjonsnummer")?.let { Organisasjonsnummer(it) }
+        organisasjonsnummer = resultset.stringOrNull("organisasjonsnummer")?.let { Organisasjonsnummer(it) },
+        opprettet = resultset.offsetDateTime("behandling_opprettet")
     )}
 }

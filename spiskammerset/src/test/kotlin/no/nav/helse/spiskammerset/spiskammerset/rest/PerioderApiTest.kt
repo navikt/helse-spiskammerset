@@ -1,7 +1,6 @@
 package no.nav.helse.spiskammerset.spiskammerset.rest
 
 import io.ktor.http.*
-import java.time.OffsetDateTime
 import no.nav.helse.spiskammerset.spiskammerset.april
 import no.nav.helse.spiskammerset.spiskammerset.januar
 import no.nav.helse.spiskammerset.spiskammerset.mars
@@ -10,6 +9,7 @@ import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
 import java.util.*
 import kotlin.test.assertEquals
+import no.nav.helse.spiskammerset.spiskammerset.Testtidspunkt
 
 internal class PerioderApiTest : RestApiTest() {
 
@@ -44,13 +44,13 @@ internal class PerioderApiTest : RestApiTest() {
                       "behandlingId": "$behandlingId1",
                       "fom": "2018-01-10",
                       "tom": "2018-01-31",
-                      "opprettet": "-999999999-01-01T00:00:00+18:00"
+                      "opprettet": "2026-02-06T14:00:00.627409Z"
                     },
                     {
                       "behandlingId": "$behandlingId2",
                       "fom": "2018-01-01",
                       "tom": "2018-01-31",
-                      "opprettet": "-999999999-01-01T00:00:00+18:00"
+                      "opprettet": "2026-02-06T14:00:00.627409Z"
                     }
                   ]
                 }
@@ -66,7 +66,7 @@ internal class PerioderApiTest : RestApiTest() {
                       "behandlingId": "$behandlingId3",
                       "fom": "2018-03-01",
                       "tom": "2018-03-31",
-                      "opprettet": "-999999999-01-01T00:00:00+18:00"
+                      "opprettet": "2026-02-06T14:00:00.627409Z"
                     }
                   ]
                 },
@@ -77,7 +77,7 @@ internal class PerioderApiTest : RestApiTest() {
                       "behandlingId": "$behandlingId4",
                       "fom": "2018-04-01",
                       "tom": "2018-04-30",
-                      "opprettet": "-999999999-01-01T00:00:00+18:00"
+                      "opprettet": "2026-02-06T14:00:00.627409Z"
                     }
                   ]
                 }
@@ -94,7 +94,7 @@ internal class PerioderApiTest : RestApiTest() {
                       "behandlingId": "$behandlingId5",
                       "fom": "2018-04-01",
                       "tom": "2018-04-30",
-                      "opprettet": "-999999999-01-01T00:00:00+18:00"
+                      "opprettet": "2026-02-06T14:00:00.627409Z"
                     }
                   ]
                 }
@@ -125,7 +125,7 @@ internal class PerioderApiTest : RestApiTest() {
         "tom": "${periode.tom}",
         "yrkesaktivitetstype": "${yrkesaktivitetstype.type}",
         ${if (organisasjonsnummer != null) """"organisasjonsnummer": "$organisasjonsnummer",""" else ""}
-        "behandlingOpprettet": "${OffsetDateTime.MIN}"
+        "behandlingOpprettet": "$Testtidspunkt"
     }
     """
 }

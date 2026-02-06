@@ -4,9 +4,9 @@ import io.ktor.http.*
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.BehandlingId
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
-import java.time.OffsetDateTime
 import java.util.*
 import kotlin.test.assertEquals
+import no.nav.helse.spiskammerset.spiskammerset.Testtidspunkt
 
 internal class OpplysningerApiTest : RestApiTest() {
 
@@ -199,7 +199,7 @@ internal class OpplysningerApiTest : RestApiTest() {
         "tom": "2018-01-31",
         "yrkesaktivitetstype": "SELVSTENDIG",
         ${if (verdien != null) """"verdien": "$verdien",""" else ""}
-        "behandlingOpprettet": "${OffsetDateTime.MIN}"
+        "behandlingOpprettet": "$Testtidspunkt"
     }
     """
 }

@@ -132,7 +132,8 @@ class HylleDaoTest {
                 vedtaksperiodeId = behandlingPersonId1.vedtaksperiodeId,
                 periode = Periode(1.januar, 31.januar),
                 yrkesaktivitetstype = Yrkesaktivitetstype("ARBEIDSTAKER"),
-                organisasjonsnummer = Organisasjonsnummer("999999999")
+                organisasjonsnummer = Organisasjonsnummer("999999999"),
+                opprettet = Testtidspunkt
             )
             val midtI = Periode(15.januar, 15.januar)
 
@@ -179,7 +180,7 @@ class HylleDaoTest {
         yrkesaktivitetstype = Yrkesaktivitetstype("ARBEIDSTAKER"),
         organisasjonsnummer = Organisasjonsnummer("999999999"),
         personidentifikator = personidentifikator,
-        opprettet = OffsetDateTime.MIN
+        opprettet = Testtidspunkt
     )
 
     private fun lagMinimalBehandling(behandlingId: BehandlingId, periode: Periode? = null, personidentifikator: Personidentifikator = enUnikPersonidentifikator()) = Behandling.MinimalBehandling(

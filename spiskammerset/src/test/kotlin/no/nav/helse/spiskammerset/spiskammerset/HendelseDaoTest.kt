@@ -45,7 +45,7 @@ class HendelseDaoTest {
         yrkesaktivitetstype = Yrkesaktivitetstype("SELVSTENDIG"),
         organisasjonsnummer = null,
         personidentifikator = Personidentifikator("11111111111"),
-        opprettet = OffsetDateTime.MIN
+        opprettet = Testtidspunkt
     )
 
     private fun Connection.hentJson(hendelseId: HendelseId): String {

@@ -2,6 +2,7 @@ package no.nav.helse.spiskammerset.spiskammerset
 
 import java.time.LocalDate
 import java.time.Month
+import java.time.OffsetDateTime
 
 private fun Int.måned(måned: Month, år: Int) = LocalDate.of(år, måned, this)
 internal fun Int.januar(år: Int) = måned(Month.JANUARY, år)
@@ -13,3 +14,5 @@ internal val Int.januar get() = januar(2018)
 internal val Int.februar get() = februar(2018)
 internal val Int.mars get() = mars(2018)
 internal val Int.april get() = april(2018)
+
+internal val Testtidspunkt = OffsetDateTime.parse("2026-02-06T14:00:00.627409Z")
