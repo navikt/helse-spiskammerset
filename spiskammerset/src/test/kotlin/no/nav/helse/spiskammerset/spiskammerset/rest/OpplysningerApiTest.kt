@@ -169,6 +169,7 @@ internal class OpplysningerApiTest : RestApiTest() {
             }
         )
 
+        @Language("JSON")
         val forventetResponse = """
             {
                 "verdien": "du skulle bare visst hvor kul verdi jeg er!",

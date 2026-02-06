@@ -1,17 +1,18 @@
 package no.nav.helse.spiskammerset.spiskammerset.rest
 
 import io.ktor.http.*
+import java.time.OffsetDateTime
 import no.nav.helse.spiskammerset.spiskammerset.april
 import no.nav.helse.spiskammerset.spiskammerset.januar
 import no.nav.helse.spiskammerset.spiskammerset.mars
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.*
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
-import java.time.OffsetDateTime
 import java.util.*
 import kotlin.test.assertEquals
 
 internal class PerioderApiTest : RestApiTest() {
+
     @Test
     fun `henter ut perioder`() = restApiTest {
         val behandlingId1 = BehandlingId(UUID.randomUUID())
@@ -31,76 +32,76 @@ internal class PerioderApiTest : RestApiTest() {
 
         @Language("JSON")
         val forventetResponse = """
-            {
-  "yrkesaktiviteter": [
-    {
-      "yrkesaktivitetstype": "SELVSTENDIG",
-      "vedtaksperioder": [
         {
-          "vedtaksperiodeId": "$vedtaksperiodeId1",
-          "behandlinger": [
+          "yrkesaktiviteter": [
             {
-              "behandlingId": "$behandlingId1",
-              "fom": "2018-01-10",
-              "tom": "2018-01-31",
-              "opprettet": "-999999999-01-01T00:00:00+18:00"
+              "yrkesaktivitetstype": "SELVSTENDIG",
+              "vedtaksperioder": [
+                {
+                  "vedtaksperiodeId": "$vedtaksperiodeId1",
+                  "behandlinger": [
+                    {
+                      "behandlingId": "$behandlingId1",
+                      "fom": "2018-01-10",
+                      "tom": "2018-01-31",
+                      "opprettet": "-999999999-01-01T00:00:00+18:00"
+                    },
+                    {
+                      "behandlingId": "$behandlingId2",
+                      "fom": "2018-01-01",
+                      "tom": "2018-01-31",
+                      "opprettet": "-999999999-01-01T00:00:00+18:00"
+                    }
+                  ]
+                }
+              ]
             },
             {
-              "behandlingId": "$behandlingId2",
-              "fom": "2018-01-01",
-              "tom": "2018-01-31",
-              "opprettet": "-999999999-01-01T00:00:00+18:00"
+              "yrkesaktivitetstype": "FRILANSER",
+              "vedtaksperioder": [
+                {
+                  "vedtaksperiodeId": "$vedtaksperiodeId2",
+                  "behandlinger": [
+                    {
+                      "behandlingId": "$behandlingId3",
+                      "fom": "2018-03-01",
+                      "tom": "2018-03-31",
+                      "opprettet": "-999999999-01-01T00:00:00+18:00"
+                    }
+                  ]
+                },
+                {
+                  "vedtaksperiodeId": "$vedtaksperiodeId3",
+                  "behandlinger": [
+                    {
+                      "behandlingId": "$behandlingId4",
+                      "fom": "2018-04-01",
+                      "tom": "2018-04-30",
+                      "opprettet": "-999999999-01-01T00:00:00+18:00"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "yrkesaktivitetstype": "ARBEIDSTAKER",
+              "organisasjonsnummer": "999999999",
+              "vedtaksperioder": [
+                {
+                  "vedtaksperiodeId": "$vedtaksperiodeId4",
+                  "behandlinger": [
+                    {
+                      "behandlingId": "$behandlingId5",
+                      "fom": "2018-04-01",
+                      "tom": "2018-04-30",
+                      "opprettet": "-999999999-01-01T00:00:00+18:00"
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
-      ]
-    },
-    {
-      "yrkesaktivitetstype": "FRILANSER",
-      "vedtaksperioder": [
-        {
-          "vedtaksperiodeId": "$vedtaksperiodeId2",
-          "behandlinger": [
-            {
-              "behandlingId": "$behandlingId3",
-              "fom": "2018-03-01",
-              "tom": "2018-03-31",
-              "opprettet": "-999999999-01-01T00:00:00+18:00"
-            }
-          ]
-        },
-        {
-          "vedtaksperiodeId": "$vedtaksperiodeId3",
-          "behandlinger": [
-            {
-              "behandlingId": "$behandlingId4",
-              "fom": "2018-04-01",
-              "tom": "2018-04-30",
-              "opprettet": "-999999999-01-01T00:00:00+18:00"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "yrkesaktivitetstype": "ARBEIDSTAKER",
-      "organisasjonsnummer": "999999999",
-      "vedtaksperioder": [
-        {
-          "vedtaksperiodeId": "$vedtaksperiodeId4",
-          "behandlinger": [
-            {
-              "behandlingId": "$behandlingId5",
-              "fom": "2018-04-01",
-              "tom": "2018-04-30",
-              "opprettet": "-999999999-01-01T00:00:00+18:00"
-            }
-          ]
-        }
-      ]
-    }
-  ]
-}
         """
         hentPerioder(
             personidentifikatorer = listOf("11111111111"),
@@ -108,7 +109,6 @@ internal class PerioderApiTest : RestApiTest() {
             tom = 30.april,
             assertResponse = { status, responseBody ->
                 assertEquals(HttpStatusCode.OK, status)
-                println(responseBody)
                 assertJsonEquals(forventetResponse, responseBody)
             }
         )
