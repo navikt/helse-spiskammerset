@@ -34,7 +34,7 @@ class BehandlingMappingTest {
         val actual = hyller.mapTilEndepunktformat()
         val expected = SvaretViGir(yrkesaktiviteter = listOf(SvaretViGir.Yrkesaktivitet(
             yrkesaktivitetstype = "ARBEIDSTAKER",
-            orgnr = "111111111",
+            organisasjonsnummer = "111111111",
             vedtaksperioder = listOf(SvaretViGir.Yrkesaktivitet.Vedtaksperioder(
                 vedtaksperiodeId = vedtaksperiodeId,
                 behandlinger = listOf(SvaretViGir.Yrkesaktivitet.Vedtaksperioder.Behandling(

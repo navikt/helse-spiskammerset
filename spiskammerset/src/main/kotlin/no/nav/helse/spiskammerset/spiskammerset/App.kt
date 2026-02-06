@@ -2,6 +2,7 @@ package no.nav.helse.spiskammerset.spiskammerset
 
 import com.auth0.jwk.JwkProviderBuilder
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.naisful.naisApp
@@ -30,6 +31,8 @@ internal val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 private val objectmapper = jacksonObjectMapper()
     .registerModules(JavaTimeModule())
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+internal suspend fun ApplicationCall.json() = objectmapper.readTree(receiveText()) as ObjectNode
+
 
 fun main() {
     Thread.currentThread().setUncaughtExceptionHandler { _, e ->
