@@ -91,7 +91,6 @@ internal class OpplysningerApiTest : RestApiTest() {
         )
     }
 
-
     @Test
     fun `prøver å hente opplysning med feil rolle`() = restApiTest {
         hentOpplysning(
@@ -105,7 +104,18 @@ internal class OpplysningerApiTest : RestApiTest() {
     }
 
     @Test
-    fun `henter ut en opplysning`() = restApiTest {
+    fun `en spissmus forrsøker å gjøre husmors arbeid`() = restApiTest {
+        lagreHendelse(
+            jsonBody = testEvent("test_event_1", BehandlingId(UUID.randomUUID()), null),
+            accessToken = spiskammersetMaskinAccessToken("spissmus"),
+            assertResponse = { status, _ ->
+                assertEquals(HttpStatusCode.Unauthorized, status)
+            }
+        )
+    }
+
+    @Test
+    fun `spissmus henter ut en opplysning`() = restApiTest {
         val behandlingId = BehandlingId(UUID.randomUUID())
 
         lagreHendelse(
@@ -124,6 +134,35 @@ internal class OpplysningerApiTest : RestApiTest() {
         """
         hentOpplysning(
             behandlingId = behandlingId,
+            opplysning = "info2",
+            assertResponse = { status, response ->
+                assertEquals(HttpStatusCode.OK, status)
+                assertJsonEquals(forventetResponse, response)
+            }
+        )
+    }
+
+    @Test
+    fun `en av spissmusens hjelpere henter ut en opplysning`() = restApiTest {
+        val behandlingId = BehandlingId(UUID.randomUUID())
+
+        lagreHendelse(
+            jsonBody = testEvent("test_event_2", behandlingId, "du skulle bare visst hvor kul verdi jeg er!"),
+            assertResponse = { status, _ ->
+                assertEquals(HttpStatusCode.NoContent, status)
+            }
+        )
+
+        val forventetResponse = """
+            {
+                "verdien": "du skulle bare visst hvor kul verdi jeg er!",
+                "epoch": "1970-01-01T00:00:00",
+                "versjon": 5
+            }
+        """
+        hentOpplysning(
+            behandlingId = behandlingId,
+            accessToken = spiskammersetPersonToken(),
             opplysning = "info2",
             assertResponse = { status, response ->
                 assertEquals(HttpStatusCode.OK, status)

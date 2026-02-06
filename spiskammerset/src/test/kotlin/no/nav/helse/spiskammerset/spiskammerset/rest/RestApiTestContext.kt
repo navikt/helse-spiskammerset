@@ -14,10 +14,16 @@ internal data class RestApiTestContext(
     private val issuer: Issuer,
     private val client: HttpClient
 ) {
-    fun spiskammersetMaskinAccessToken(rolle: String?) = issuer.accessToken {
+    internal fun spiskammersetMaskinAccessToken(rolle: String?) = issuer.accessToken {
         rolle?.let { withArrayClaim("roles", arrayOf(rolle, "${UUID.randomUUID()}")) }
         withClaim("azp_name", "${UUID.randomUUID()}")
         withClaim("idtyp", "app")
+    }
+
+    internal fun spiskammersetPersonToken(navn: String = "Nordmann, Ola", ident: String = "ABC123") = issuer.accessToken {
+        withClaim("azp_name", "Spanner")
+        withClaim("NAVident", ident)
+        withClaim("name", navn)
     }
 
     suspend fun hentOpplysning(
