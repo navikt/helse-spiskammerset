@@ -1,13 +1,12 @@
 package no.nav.helse.spiskammerset.spiskammerset.rest
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.naisful.test.naisfulTestApp
 import com.github.navikt.tbd_libs.signed_jwt_issuer_test.Issuer
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.helse.spiskammerset.spiskammerset.databaseContainer
 import no.nav.helse.spiskammerset.spiskammerset.db.DataSourceBuilder
+import no.nav.helse.spiskammerset.spiskammerset.objectmapper
 import no.nav.helse.spiskammerset.spiskammerset.spiskammerset
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -50,7 +49,7 @@ internal abstract class RestApiTest {
                     )
                 )
             },
-            objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule()),
+            objectMapper = objectmapper,
             meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
             testblokk = {
                 testblokk(RestApiTestContext(issuer, client))

@@ -20,15 +20,15 @@ import no.nav.helse.spiskammerset.oppbevaringsboks.Oppbevaringsboks
 import no.nav.helse.spiskammerset.spiskammerset.db.DataSourceBuilder
 import no.nav.helse.spiskammerset.spiskammerset.db.DefaultDataSourceBuilder
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.Hendelsehåndterer
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.perioderApi
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.hendelseApi
+import no.nav.helse.spiskammerset.spiskammerset.reisverk.oppbevaringsbokserApi
+import no.nav.helse.spiskammerset.spiskammerset.reisverk.perioderApi
 import org.slf4j.LoggerFactory
 import java.net.URI
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.oppbevaringsbokserApi
 
 private val logg = LoggerFactory.getLogger(::main.javaClass)
 internal val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
-private val objectmapper = jacksonObjectMapper()
+internal val objectmapper = jacksonObjectMapper()
     .registerModules(JavaTimeModule())
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 internal suspend fun ApplicationCall.json() = objectmapper.readTree(receiveText()) as ObjectNode

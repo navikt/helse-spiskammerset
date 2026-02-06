@@ -1,15 +1,15 @@
 package no.nav.helse.spiskammerset.spiskammerset.reisverk
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.github.navikt.tbd_libs.sql_dsl.connection
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.response.respond
-import io.ktor.server.routing.Route
-import io.ktor.server.routing.post
+import io.ktor.http.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import no.nav.helse.spiskammerset.spiskammerset.json
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.util.UUID
+import java.util.*
 import javax.sql.DataSource
-import no.nav.helse.spiskammerset.spiskammerset.json
 
 internal fun Route.perioderApi(dataSource: DataSource) {
 
@@ -36,7 +36,7 @@ internal fun Route.perioderApi(dataSource: DataSource) {
 data class YrkesaktivitetSpesifikasjon(val yrkesaktivitetstype: Yrkesaktivitetstype, val organisasjonsnummer: Organisasjonsnummer?)
 
 data class SvaretViGir(val yrkesaktiviteter: List<Yrkesaktivitet>) {
-    data class Yrkesaktivitet(val yrkesaktivitetstype: String, val organisasjonsnummer: String?, val vedtaksperioder: List<Vedtaksperioder>) {
+    data class Yrkesaktivitet(val yrkesaktivitetstype: String, @JsonInclude(JsonInclude.Include.NON_NULL)val organisasjonsnummer: String?, val vedtaksperioder: List<Vedtaksperioder>) {
         data class Vedtaksperioder(val vedtaksperiodeId: UUID, val behandlinger: List<Behandling>) {
             data class Behandling(val behandlingId: UUID, val fom: LocalDate, val tom: LocalDate, val opprettet: OffsetDateTime)
         }

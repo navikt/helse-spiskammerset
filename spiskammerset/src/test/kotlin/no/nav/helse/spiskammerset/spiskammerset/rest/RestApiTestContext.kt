@@ -8,7 +8,9 @@ import io.ktor.http.*
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.BehandlingId
 import org.intellij.lang.annotations.Language
 import org.skyscreamer.jsonassert.JSONAssert
+import java.time.LocalDate
 import java.util.*
+import kotlin.test.assertEquals
 
 internal data class RestApiTestContext(
     private val issuer: Issuer,
@@ -54,11 +56,33 @@ internal data class RestApiTestContext(
     suspend fun lagreHendelse(
         jsonBody: String,
         accessToken: String = spiskammersetMaskinAccessToken("husmor"),
-        assertResponse: (status: HttpStatusCode, responseBody: String) -> Unit
+        assertResponse: (status: HttpStatusCode, responseBody: String) -> Unit = { mottattStatus, _ ->
+            assertEquals(HttpStatusCode.NoContent, mottattStatus)
+        }
     ) {
         val response = client.post("/hendelse") {
             header("Authorization", "Bearer $accessToken")
             setBody(jsonBody)
+        }
+        assertResponse(response.status, response.bodyAsText())
+    }
+
+    suspend fun hentPerioder(
+        personidentifikatorer: List<String>,
+        fom: LocalDate,
+        tom: LocalDate,
+        accessToken: String = spiskammersetMaskinAccessToken("spissmus"),
+        assertResponse: (status: HttpStatusCode, responseBody: String) -> Unit
+    ) {
+        val response = client.post("/perioder") {
+            header("Authorization", "Bearer $accessToken")
+            setBody("""
+                {
+                    "personidentifikatorer": ${personidentifikatorer.map { """"$it"""" }},
+                    "fom": "$fom",
+                    "tom": "$tom"
+                }
+            """)
         }
         assertResponse(response.status, response.bodyAsText())
     }
