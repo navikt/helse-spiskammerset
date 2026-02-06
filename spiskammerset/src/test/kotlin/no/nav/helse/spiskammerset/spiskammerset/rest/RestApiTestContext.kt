@@ -32,10 +32,12 @@ internal data class RestApiTestContext(
         behandlingId: BehandlingId,
         accessToken: String = spiskammersetMaskinAccessToken("spissmus"),
         opplysning: String,
+        callId: UUID = UUID.randomUUID(),
         assertResponse: (status: HttpStatusCode, respondeBody: String) -> Unit
     ) {
         val response = client.get("/behandling/$behandlingId/$opplysning") {
             header("Authorization", "Bearer $accessToken")
+            header("callId", callId.toString())
         }
         assertResponse(response.status, response.bodyAsText())
     }
@@ -44,11 +46,13 @@ internal data class RestApiTestContext(
         behandlingId: BehandlingId,
         accessToken: String = spiskammersetMaskinAccessToken("spissmus"),
         opplysninger: Set<String> = emptySet(),
+        callId: UUID = UUID.randomUUID(),
         assertResponse: (status: HttpStatusCode, respondeBody: String) -> Unit
     ) {
         val response = client.get("/behandling/$behandlingId") {
             opplysninger.forEach { opplysning -> parameter("opplysning", opplysning) }
             header("Authorization", "Bearer $accessToken")
+            header("callId", callId.toString())
         }
         assertResponse(response.status, response.bodyAsText())
     }

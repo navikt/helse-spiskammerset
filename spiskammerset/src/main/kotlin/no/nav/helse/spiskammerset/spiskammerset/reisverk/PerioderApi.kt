@@ -5,7 +5,6 @@ import com.github.navikt.tbd_libs.sql_dsl.connection
 import io.ktor.http.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import no.nav.helse.spiskammerset.spiskammerset.json
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
@@ -14,7 +13,7 @@ import javax.sql.DataSource
 internal fun Route.perioderApi(dataSource: DataSource) {
 
     post("/perioder") {
-        try {
+        håndterRequest {
             val requestJson = call.json()
             // dra ut personidentifikatorer fra call
             val personidentifikatorer = requestJson["personidentifikatorer"].map { it.asText() }.map { Personidentifikator(it) }.toTypedArray()
@@ -27,8 +26,6 @@ internal fun Route.perioderApi(dataSource: DataSource) {
             }
             // map tilbake på en fornuft måte
             call.respond(HttpStatusCode.OK, behandlinger.mapTilEndepunktformat())
-        } catch (_: Exception) {
-            call.respond(HttpStatusCode.InternalServerError, "Nå har det gått til skogen")
         }
     }
 }

@@ -60,13 +60,29 @@ internal class OpplysningerApiTest : RestApiTest() {
     @Test
     fun `prøver å hente opplysning for behandling som ikke finnes`() = restApiTest {
         val behandlingId = BehandlingId(UUID.randomUUID())
+        val callId = UUID.randomUUID()
+
+        @Language("JSON")
+        val forventetResponse = """
+            {
+              "type": "urn:error:not_found",
+              "title": "Not Found",
+              "status": 404,
+              "detail": "Fant ikke info1 for behandlingId: $behandlingId",
+              "instance": "/behandling/$behandlingId/info1",
+              "callId": "$callId",
+              "stacktrace": "Fant ikke info1 for behandlingId: $behandlingId"
+            }
+        """
 
         hentOpplysning(
             behandlingId = behandlingId,
             opplysning = "info1",
+            callId = callId,
             assertResponse = { status, responseBody ->
                 assertEquals(HttpStatusCode.NotFound, status)
-                assertJsonEquals("""{ "feilmelding": "Fant ikke info1 for behandlingId: $behandlingId" }""", responseBody)
+                println(responseBody)
+                assertJsonEquals(forventetResponse, responseBody)
             }
         )
     }

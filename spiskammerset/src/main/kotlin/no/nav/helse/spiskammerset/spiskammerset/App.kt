@@ -31,8 +31,6 @@ internal val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 internal val objectmapper = jacksonObjectMapper()
     .registerModules(JavaTimeModule())
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-internal suspend fun ApplicationCall.json() = objectmapper.readTree(receiveText()) as ObjectNode
-
 
 fun main() {
     Thread.currentThread().setUncaughtExceptionHandler { _, e ->
