@@ -1,7 +1,11 @@
 package no.nav.helse.spiskammerset.spiskammerset
 
 import com.auth0.jwt.interfaces.Payload
+import io.ktor.server.application.createRouteScopedPlugin
 import io.ktor.server.auth.jwt.JWTCredential
+import io.ktor.server.auth.principal
+import io.ktor.server.plugins.calllogging.processingTimeMillis
+import io.ktor.server.request.path
 import kotlin.collections.contains
 
 sealed interface Besøkende {
@@ -40,3 +44,30 @@ sealed interface Besøkende {
         }
     }
 }
+
+internal val Gjestebok =
+    createRouteScopedPlugin("Gjestebok") {
+        onCallRespond { call ->
+            val besøkende = call.principal<Besøkende>() ?: return@onCallRespond
+            val tidsbruk = call.processingTimeMillis()
+
+            val denBesøkende = when (besøkende) {
+                is Besøkende.Husmor -> "Husmoren ${besøkende.navn}"
+                is Besøkende.Spissmus -> "Spissmusen ${besøkende.navn}"
+                is Besøkende.Spissmus.Hjelper -> "Spissmusen ${besøkende.spissmus.navn} sin hjelper ${besøkende.navn}"
+                is Besøkende.Tyv -> throw besøkende
+            }
+
+            val gjøremål = when (besøkende) {
+                is Besøkende.Husmor -> "legge noe på hyllene"
+                is Besøkende.Spissmus,
+                is Besøkende.Spissmus.Hjelper -> {
+                    val opplysninger = call.request.queryParameters.getAll("opplysning")?.takeUnless { it.isEmpty() }?.let { " (${it.joinToString()})" } ?: ""
+                    "hente ${call.request.path()}${opplysninger}"
+                }
+                is Besøkende.Tyv -> throw besøkende
+            }
+
+            sikkerlogg.info("Nå var $denBesøkende innom i ${tidsbruk}ms for å $gjøremål")
+        }
+    }

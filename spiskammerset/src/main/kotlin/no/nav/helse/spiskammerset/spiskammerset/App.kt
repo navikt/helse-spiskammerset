@@ -84,6 +84,7 @@ internal fun Application.spiskammerset(
     val hendelsehåndterer = Hendelsehåndterer(dataSource, oppbevaringsbokser)
 
     routing {
+        install(Gjestebok)
         authenticate("spissmus") {
             perioderApi(dataSource)
             oppbevaringsbokserApi(dataSource, oppbevaringsbokser)
