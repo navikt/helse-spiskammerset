@@ -89,7 +89,7 @@ data class Hendelse(
         }
 
         private fun behandlingOpprettetTidspunkt(json: JsonNode): OffsetDateTime {
-            if (json.hasNonNull("behandlingOpprettet")) return OffsetDateTime.parse(json["behandlingOpprettet"].asText())
+            if (json.hasNonNull("behandlingOpprettetTidspunkt")) return OffsetDateTime.parse(json["behandlingOpprettetTidspunkt"].asText())
             check(json["@event_name"].asText() == "behandling_opprettet") { "Dette må vi huske på når vi migrerer inn behandlinger. Da kan vi ikke bruke @opprettet, det blir bare tull og tøys" }
             return LocalDateTime.parse(json["@opprettet"].asText()).let {
                 OffsetDateTime.of(it, Oslo.rules.getOffset(it))

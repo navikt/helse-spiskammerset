@@ -1,6 +1,7 @@
 package no.nav.helse.spiskammerset.spiskammerset.rest
 
 import io.ktor.http.*
+import no.nav.helse.spiskammerset.spiskammerset.Testtidspunkt
 import no.nav.helse.spiskammerset.spiskammerset.april
 import no.nav.helse.spiskammerset.spiskammerset.januar
 import no.nav.helse.spiskammerset.spiskammerset.mars
@@ -9,7 +10,6 @@ import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
 import java.util.*
 import kotlin.test.assertEquals
-import no.nav.helse.spiskammerset.spiskammerset.Testtidspunkt
 
 internal class PerioderApiTest : RestApiTest() {
 
@@ -125,7 +125,7 @@ internal class PerioderApiTest : RestApiTest() {
         "tom": "${periode.tom}",
         "yrkesaktivitetstype": "${yrkesaktivitetstype.type}",
         ${if (organisasjonsnummer != null) """"organisasjonsnummer": "$organisasjonsnummer",""" else ""}
-        "behandlingOpprettet": "$Testtidspunkt"
+        "behandlingOpprettetTidspunkt": "$Testtidspunkt"
     }
     """
 }
