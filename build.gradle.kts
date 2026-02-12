@@ -6,6 +6,8 @@ val rapidsAndRiversVersion = "2026011411051768385145.e8ebad1177b4"
 val jacksonVersion = "2.18.3"
 val hikariCPVersion = "6.3.0"
 val jsonAssertVersion = "1.5.3"
+val kotliqueryVersion = "1.9.0"
+val postgresqlVersion = "42.7.7"
 
 plugins {
     kotlin("jvm") version "2.2.21" apply false
@@ -38,6 +40,8 @@ subprojects {
     ext.set("jacksonVersion", jacksonVersion)
     ext.set("jsonAssertVersion", jsonAssertVersion)
     ext.set("hikariCPVersion", hikariCPVersion)
+    ext.set("postgresqlVersion", postgresqlVersion)
+    ext.set("kotliqueryVersion", kotliqueryVersion)
 
     val testImplementation by configurations
     val testRuntimeOnly by configurations
@@ -53,7 +57,7 @@ subprojects {
     }
 
     tasks {
-        if (project.name in setOf("spiskammerset", "mottak")) {
+        if (project.name in setOf("spiskammerset", "mottak", "opprydding-dev")) {
             withType<Jar> {
                 archiveBaseName.set("app")
 

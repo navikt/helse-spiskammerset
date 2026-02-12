@@ -4,9 +4,9 @@ val logbackClassicVersion = "1.5.25"
 val logbackEncoderVersion = "8.0"
 val ktorVersion = "3.2.3" // bør være samme som i <com.github.navikt.tbd-libs:naisful-app>
 val flywayCoreVersion = "11.5.0"
-val hikariCPVersion = "6.3.0"
-val postgresqlVersion = "42.7.7"
-val jsonAssertVersion = "1.5.3"
+val hikariCPVersion: String by project
+val postgresqlVersion: String by project
+val jsonAssertVersion: String by project
 
 dependencies {
     implementation(project(":oppbevaringsboks"))
