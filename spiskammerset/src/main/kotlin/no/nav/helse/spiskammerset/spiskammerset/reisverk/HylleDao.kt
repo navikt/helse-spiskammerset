@@ -6,7 +6,7 @@ import org.intellij.lang.annotations.Language
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
-import java.time.OffsetDateTime
+import java.time.Instant
 
 data class Hylle(
     val behandlingId: BehandlingId,
@@ -14,7 +14,7 @@ data class Hylle(
     val periode: Periode,
     val yrkesaktivitetstype: Yrkesaktivitetstype,
     val organisasjonsnummer: Organisasjonsnummer?,
-    val opprettet: OffsetDateTime
+    val opprettet: Instant
 )
 
 sealed interface Hyllestatus {
@@ -145,6 +145,6 @@ internal fun Connection.finnHyller(periode: Periode, vararg personidentifikatore
         periode = Periode(resultset.localDate("fom"), resultset.localDate("tom")),
         yrkesaktivitetstype = Yrkesaktivitetstype(resultset.string("yrkesaktivitetstype")),
         organisasjonsnummer = resultset.stringOrNull("organisasjonsnummer")?.let { Organisasjonsnummer(it) },
-        opprettet = resultset.offsetDateTime("behandling_opprettet")
+        opprettet = resultset.offsetDateTime("behandling_opprettet").toInstant()
     )}
 }

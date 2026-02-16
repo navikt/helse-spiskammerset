@@ -5,8 +5,8 @@ import com.github.navikt.tbd_libs.sql_dsl.connection
 import io.ktor.http.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import java.time.Instant
 import java.time.LocalDate
-import java.time.OffsetDateTime
 import java.util.*
 import javax.sql.DataSource
 
@@ -35,7 +35,7 @@ data class YrkesaktivitetSpesifikasjon(val yrkesaktivitetstype: Yrkesaktivitetst
 data class SvaretViGir(val yrkesaktiviteter: List<Yrkesaktivitet>) {
     data class Yrkesaktivitet(val yrkesaktivitetstype: String, @JsonInclude(JsonInclude.Include.NON_NULL)val organisasjonsnummer: String?, val vedtaksperioder: List<Vedtaksperioder>) {
         data class Vedtaksperioder(val vedtaksperiodeId: UUID, val behandlinger: List<Behandling>) {
-            data class Behandling(val behandlingId: UUID, val fom: LocalDate, val tom: LocalDate, val opprettet: OffsetDateTime)
+            data class Behandling(val behandlingId: UUID, val fom: LocalDate, val tom: LocalDate, val opprettet: Instant)
         }
     }
 }

@@ -4,7 +4,6 @@ import no.nav.helse.spiskammerset.spiskammerset.reisverk.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.time.OffsetDateTime
 import java.util.*
 import kotlin.random.Random
 

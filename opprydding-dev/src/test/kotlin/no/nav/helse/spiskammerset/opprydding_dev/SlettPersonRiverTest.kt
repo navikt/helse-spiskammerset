@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.sql.PreparedStatement
+import java.time.Instant
 import java.time.LocalDate
-import java.time.OffsetDateTime
 import java.util.UUID
 import kotlin.use
 
@@ -35,7 +35,7 @@ internal class SlettPersonRiverTest {
                 withNull("organisasjonsnummer")
                 withParameter("fom", LocalDate.parse("2024-01-01"))
                 withParameter("tom", LocalDate.parse("2024-12-31"))
-                withParameter("behandlingOpprettet", OffsetDateTime.parse("2024-01-01T00:00:00Z"))
+                withParameter("behandlingOpprettet", Instant.parse("2024-01-01T00:00:00Z"))
             }.use(PreparedStatement::executeUpdate)
 
 

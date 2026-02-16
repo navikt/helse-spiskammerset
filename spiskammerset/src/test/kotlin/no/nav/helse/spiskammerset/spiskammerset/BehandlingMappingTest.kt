@@ -1,7 +1,5 @@
 package no.nav.helse.spiskammerset.spiskammerset
 
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import java.util.UUID
 import kotlin.test.assertEquals
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.BehandlingId
@@ -18,7 +16,6 @@ class BehandlingMappingTest {
 
     @Test
     fun `én ting som mappes`() {
-        val nå = OffsetDateTime.now(ZoneOffset.UTC)
         val vedtaksperiodeId = UUID.randomUUID()
         val behandlingId = UUID.randomUUID()
         val hyller =listOf(
@@ -28,7 +25,7 @@ class BehandlingMappingTest {
                 periode = Periode(1.januar, 31.januar),
                 yrkesaktivitetstype = Yrkesaktivitetstype("ARBEIDSTAKER"),
                 organisasjonsnummer = Organisasjonsnummer("111111111"),
-                opprettet = nå,
+                opprettet = Testtidspunkt,
             ),
         )
         val actual = hyller.mapTilEndepunktformat()
@@ -41,7 +38,7 @@ class BehandlingMappingTest {
                     behandlingId = behandlingId,
                     fom = 1.januar,
                     tom = 31.januar,
-                    opprettet = nå
+                    opprettet = Testtidspunkt
                 ))
             ))
         )))

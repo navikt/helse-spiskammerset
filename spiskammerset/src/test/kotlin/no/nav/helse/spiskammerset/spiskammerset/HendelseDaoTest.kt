@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.sql.Connection
 import java.time.LocalDate
-import java.time.OffsetDateTime
 import java.util.*
 
 class HendelseDaoTest {
