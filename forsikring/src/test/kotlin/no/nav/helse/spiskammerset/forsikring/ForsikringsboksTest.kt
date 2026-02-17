@@ -18,7 +18,7 @@ internal class ForsikringsboksTest {
     @Test
     fun `henter ut forsikringsinformasjon fra benyttet_grunnlagsdata_for_beregning`() = databaseTest { dataSource ->
         dataSource.connection {
-            Forsikringsboks.leggPå(Hyllenummer(1), innJson(100, true, 500_000), this)
+            Forsikringsboks.leggPå(Hyllenummer(1), innJson(100, true, 500_000, "SelvstendigForsikring"), this)
 
             val hentetInnhold = Forsikringsboks.taNedFra(Hyllenummer(1), this)
             assertLikJsonInnhold(utInnhold(100,1), hentetInnhold)
@@ -28,7 +28,7 @@ internal class ForsikringsboksTest {
     @Test
     fun `ignorerer andre events`() = databaseTest { dataSource ->
         dataSource.connection {
-            val status = Forsikringsboks.leggPå(Hyllenummer(1), innJson(100, true, 500_000, "mjau"), this)
+            val status = Forsikringsboks.leggPå(Hyllenummer(1), innJson(100, true, 500_000, "SelvstendigForsikring", "mjau"), this)
 
             assertEquals(Innholdsstatus.UendretInnhold, status)
         }
@@ -46,14 +46,20 @@ internal class ForsikringsboksTest {
     @Test
     fun `hva skjer når samme data forsøkes lagres to ganger`() = databaseTest { dataSource ->
         dataSource.connection {
-            Forsikringsboks.leggPå(Hyllenummer(1), innJson(100, true, 500_000), this)
-            val status = Forsikringsboks.leggPå(Hyllenummer(1), innJson(100, true, 500_000), this)
+            Forsikringsboks.leggPå(Hyllenummer(1), innJson(100, true, 500_000, "SelvstendigForsikring"), this)
+            val status = Forsikringsboks.leggPå(Hyllenummer(1), innJson(100, true, 500_000, "SelvstendigForsikring"), this)
 
             assertEquals(Innholdsstatus.EndretInnhold, status) // Innholdet er vel egentlig ikke endret? er det litt rart eller?
         }
     }
 
-    private fun innJson(dekningsgrad: Int, navOvertarAnsvarForVentetid: Boolean, premiegrunnlag: Int, eventName: String = "benyttet_grunnlagsdata_for_beregning"): ObjectNode {
+    private fun innJson(
+        dekningsgrad: Int,
+        navOvertarAnsvarForVentetid: Boolean,
+        premiegrunnlag: Int,
+        arbeidssituasjonForsikringstype: String,
+        eventName: String = "benyttet_grunnlagsdata_for_beregning"
+    ): ObjectNode {
         @Language("JSON")
         val json = """
         {
@@ -61,7 +67,8 @@ internal class ForsikringsboksTest {
             "forsikring": {
                 "dekningsgrad": $dekningsgrad,
                 "navOvertarAnsvarForVentetid": $navOvertarAnsvarForVentetid,
-                "premiegrunnlag": $premiegrunnlag
+                "premiegrunnlag": $premiegrunnlag,
+                "arbeidssituasjonForsikringstype": "$arbeidssituasjonForsikringstype"
             }
         }
         """

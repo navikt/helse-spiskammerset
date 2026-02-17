@@ -1,6 +1,9 @@
 package no.nav.helse.spiskammerset.forsikring
 
 import com.fasterxml.jackson.databind.node.ObjectNode
+import no.nav.helse.spiskammerset.forsikring.Forsikring.ArbeidssituasjonForsikringstype
+import no.nav.helse.spiskammerset.forsikring.Forsikring.ArbeidssituasjonForsikringstype.KollektivJordbruksforsikring
+import no.nav.helse.spiskammerset.forsikring.Forsikring.ArbeidssituasjonForsikringstype.SelvstendigForsikring
 import no.nav.helse.spiskammerset.oppbevaringsboks.*
 import java.sql.Connection
 
@@ -12,10 +15,18 @@ data object Forsikringsboks: Oppbevaringsboks {
         if (json["@event_name"].asText() != "benyttet_grunnlagsdata_for_beregning") return Innholdsstatus.UendretInnhold
         val forsikringJson = json["forsikring"] ?: return Innholdsstatus.UendretInnhold
         val dao = ForsikringDao(connection)
+        val arbeidssituasjonForsikringstype = ArbeidssituasjonForsikringstype.valueOf(forsikringJson["arbeidssituasjonForsikringstype"].asText())
+
+        val premiegrunnlag = when (arbeidssituasjonForsikringstype) {
+            KollektivJordbruksforsikring -> 0
+            SelvstendigForsikring -> forsikringJson["premiegrunnlag"].asInt()
+        }
+
         val forsikring = Forsikring(
             dekningsgrad = forsikringJson["dekningsgrad"].asInt(),
             navOvertarAnsvarForVentetid = forsikringJson["navOvertarAnsvarForVentetid"].asBoolean(),
-            premiegrunnlag = forsikringJson["premiegrunnlag"].asInt(),
+            premiegrunnlag = premiegrunnlag,
+            arbeidssituasjonForsikringstype = arbeidssituasjonForsikringstype,
             versjon = gjeldendeVersjon
         )
 
