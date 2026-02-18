@@ -12,15 +12,20 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNull
 import org.skyscreamer.jsonassert.JSONAssert
+import java.sql.Connection
+import java.time.Instant
+import java.time.LocalDate
+import java.util.UUID
 
 internal class ForsikringsboksTest {
 
     @Test
     fun `henter ut forsikringsinformasjon fra benyttet_grunnlagsdata_for_beregning`() = databaseTest { dataSource ->
         dataSource.connection {
-            Forsikringsboks.leggPå(Hyllenummer(1), innJson(100, true, 500_000, "SelvstendigForsikring"), this)
+            val hyllenummer = opprettHylle()
+            Forsikringsboks.leggPå(hyllenummer, innJson(100, true, 500_000, "SelvstendigForsikring"), this)
 
-            val hentetInnhold = Forsikringsboks.taNedFra(Hyllenummer(1), this)
+            val hentetInnhold = Forsikringsboks.taNedFra(hyllenummer, this)
             assertLikJsonInnhold(utInnhold(100,1), hentetInnhold)
         }
     }
@@ -28,7 +33,8 @@ internal class ForsikringsboksTest {
     @Test
     fun `ignorerer andre events`() = databaseTest { dataSource ->
         dataSource.connection {
-            val status = Forsikringsboks.leggPå(Hyllenummer(1), innJson(100, true, 500_000, "SelvstendigForsikring", "mjau"), this)
+            val hyllenummer = opprettHylle()
+            val status = Forsikringsboks.leggPå(hyllenummer, innJson(100, true, 500_000, "SelvstendigForsikring", "mjau"), this)
 
             assertEquals(Innholdsstatus.UendretInnhold, status)
         }
@@ -37,7 +43,8 @@ internal class ForsikringsboksTest {
     @Test
     fun `får ingenting når det ikke finnes noe på hylla`() = databaseTest { dataSource ->
         dataSource.connection {
-            val hentetInnhold = Forsikringsboks.taNedFra(Hyllenummer(1), this)
+            val hyllenummer = opprettHylle()
+            val hentetInnhold = Forsikringsboks.taNedFra(hyllenummer, this)
 
             assertNull(hentetInnhold)
         }
@@ -46,8 +53,9 @@ internal class ForsikringsboksTest {
     @Test
     fun `hva skjer når samme data forsøkes lagres to ganger`() = databaseTest { dataSource ->
         dataSource.connection {
-            Forsikringsboks.leggPå(Hyllenummer(1), innJson(100, true, 500_000, "SelvstendigForsikring"), this)
-            val status = Forsikringsboks.leggPå(Hyllenummer(1), innJson(100, true, 500_000, "SelvstendigForsikring"), this)
+            val hyllenummer = opprettHylle()
+            Forsikringsboks.leggPå(hyllenummer, innJson(100, true, 500_000, "SelvstendigForsikring"), this)
+            val status = Forsikringsboks.leggPå(hyllenummer, innJson(100, true, 500_000, "SelvstendigForsikring"), this)
 
             assertEquals(Innholdsstatus.EndretInnhold, status) // Innholdet er vel egentlig ikke endret? er det litt rart eller?
         }
@@ -82,5 +90,25 @@ internal class ForsikringsboksTest {
 
     private fun assertLikJsonInnhold(expected: Innhold, actual: Innhold?) {
         JSONAssert.assertEquals(expected.tilJson(), actual?.tilJson(), true)
+    }
+
+    private fun Connection.opprettHylle(): Hyllenummer {
+        val sql = """
+            INSERT INTO hylle (vedtaksperiode_id, behandling_id, yrkesaktivitetstype, organisasjonsnummer, fom, tom, behandling_opprettet)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            RETURNING hyllenummer
+        """
+        return prepareStatement(sql).use { statement ->
+            statement.setObject(1, UUID.randomUUID())
+            statement.setObject(2, UUID.randomUUID())
+            statement.setString(3, "SELVSTENDIG")
+            statement.setString(4, null)
+            statement.setDate(5, java.sql.Date.valueOf(LocalDate.of(2024, 1, 1)))
+            statement.setDate(6, java.sql.Date.valueOf(LocalDate.of(2024, 12, 31)))
+            statement.setTimestamp(7, java.sql.Timestamp.from(Instant.parse("2024-01-01T00:00:00Z")))
+            val resultSet = statement.executeQuery()
+            resultSet.next()
+            Hyllenummer(resultSet.getLong("hyllenummer"))
+        }
     }
 }
