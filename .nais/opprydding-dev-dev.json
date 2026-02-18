@@ -1,7 +1,6 @@
 {
   "kafkaPool": "nav-dev",
   "tenant": "nav.no",
-  "tier": "db-f1-micro",
   "consumerGroupId": "tbd-spiskammerset-opprydding-v1"
 }
 

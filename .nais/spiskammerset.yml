@@ -16,6 +16,8 @@ spec:
         databases:
           - name: spiskammerset
             envVarPrefix: DATABASE
+            users:
+              - name: spiskammerset-opprydding-dev
   strategy:
     type: RollingUpdate
   replicas:
