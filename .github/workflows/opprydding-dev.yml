@@ -1,0 +1,57 @@
+name: build opprydding-dev
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'opprydding-dev/**'
+      - '.github/workflows/opprydding-dev.yml'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+      - '.nais/opprydding-dev.yml'
+      - '.nais/opprydding-dev-dev.json'
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21.x'
+          cache: 'gradle'
+      - name: gradle
+        run: ./gradlew :opprydding-dev:build
+        env:
+          ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
+      - name: build docker image
+        uses: nais/docker-build-push@v0
+        id: docker-build-push
+        with:
+          team: tbd
+          dockerfile: Dockerfile
+          image_suffix: opprydding
+          docker_context: opprydding-dev
+    outputs:
+      image: ${{ steps.docker-build-push.outputs.image }}
+
+  deployDev:
+    name: deploy to dev
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: dev-gcp
+          RESOURCE: .nais/opprydding-dev.yml
+          VARS: .nais/opprydding-dev-dev.json
+          IMAGE: ${{ needs.build.outputs.image }}
+

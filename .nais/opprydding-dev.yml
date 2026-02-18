@@ -1,0 +1,69 @@
+apiVersion: nais.io/v1alpha1
+kind: Application
+metadata:
+  name: spiskammerset-opprydding
+  namespace: tbd
+  labels:
+    team: tbd
+spec:
+  image: {{image}}
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_18
+        diskAutoresize: true
+        tier: {{tier}}
+        name: spiskammerset
+        databases:
+          - name: spiskammerset
+            envVarPrefix: DATABASE
+  strategy:
+    type: RollingUpdate
+  replicas:
+    min: 1
+    max: 2
+    scalingStrategy:
+      kafka:
+        topic: tbd.rapid.v1
+        consumerGroup: {{consumerGroupId}}
+        threshold: 200
+  liveness:
+    path: /isalive
+  readiness:
+    path: /isready
+    periodSeconds: 1
+  preStopHook:
+    http:
+      path: /stop
+  resources:
+    limits:
+      memory: 512Mi
+  prometheus:
+    path: /metrics
+    enabled: true
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
+    logging:
+      destinations:
+        - id: elastic
+        - id: loki
+  kafka:
+    pool: {{kafkaPool}}
+  accessPolicy:
+    outbound:
+      rules:
+        - application: logging
+          namespace: nais-system
+  azure:
+    application:
+      enabled: true
+      tenant: {{tenant}}
+  env:
+    - name: KAFKA_RAPID_TOPIC
+      value: tbd.rapid.v1
+    - name: KAFKA_CONSUMER_GROUP_ID
+      value: {{consumerGroupId}}
+    - name: KAFKA_RESET_POLICY
+      value: LATEST
+
