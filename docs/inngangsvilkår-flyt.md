@@ -45,7 +45,8 @@ spillkar ->> behovsakumulator: @løsning.VurderteInngangsvilkår
 behovsakumulator -->> behovsakumulator: Her slås det også sammen løsninger på<br/>andre behov som sendes ut i AvventerHistorikk
 behovsakumulator ->> spiskammerset: @løsning med @final:true
 spiskammerset ->> spiskammerset: Kobler beregningId mot behandlingId<br/> (for en forlengelse er ikke dette gjort før)
-spiskammerset ->> spiskammerset: Kobler inngangsvilkårId mot alle data-elementer beregningId<br/>allerede er koblet mot<br/>(for forlengelser er det ingenting)
+spiskammerset ->> spiskammerset: Kobler inngangsvilkårId mot beregningId
+spiskammerset ->> spiskammerset: Svevende tanke:<br/>Koble inngangsvilkårId mot alle "oppbevaringsboker" beregningId allerede<br/>er koblet til. For førstegangs er det typisk inngangsvilkårting<br/>for forlengelser: ingenting<br/>Da kunne man GET'et på inngangsvilkårId fremfor<br/>alle underliggende ID'er (medlemskapId etc.)
 spiskammerset ->> spiskammerset: Lagrer på sikt ned fler løsninger mot beregningId (løpende vilkår)
 # Så er vi i spleis igjen
 spiskammerset ->> Spleis (AvventerHistorikk): @løsning med @persistert:true
