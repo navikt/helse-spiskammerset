@@ -103,13 +103,9 @@ data class VedtaksperiodeResponse(val vedtaksperioder: List<Vedtaksperiode>) {
     data class Vedtaksperiode(
         val vedtaksperiodeId: java.util.UUID,
         val periode: PeriodeDto,
-        val behandlinger: List<BehandlingMedInnhold>
+        val behandlinger: List<Map<String, Any?>>
     ) {
         data class PeriodeDto(val fom: LocalDate, val tom: LocalDate)
-        data class BehandlingMedInnhold(
-            val behandlingId: java.util.UUID,
-            val oppbevaringsbokser: Map<String, Map<String, Any?>?>
-        )
     }
 }
 
@@ -122,15 +118,15 @@ fun List<BehandlingMedOppbevaringsbokser>.mapTilVedtaksperiodeformat(): Vedtaksp
             val periode = hyllerMedInnhold.first().first.periode
 
             val behandlinger = hyllerMedInnhold.map { (hylle, innholdMap) ->
-                // Konverter innhold til Map<String, Any?>
-                val oppbevaringsbokser = innholdMap.mapValues { (_, innhold) ->
-                    innhold?.innhold
+                // Start med behandlingId
+                val behandlingMap = mutableMapOf<String, Any?>("behandlingId" to hylle.behandlingId.id)
+
+                // Legg til alle oppbevaringsbokser direkte på behandling-nivå
+                innholdMap.forEach { (etikett, innhold) ->
+                    behandlingMap[etikett] = innhold?.innhold
                 }
 
-                VedtaksperiodeResponse.Vedtaksperiode.BehandlingMedInnhold(
-                    behandlingId = hylle.behandlingId.id,
-                    oppbevaringsbokser = oppbevaringsbokser
-                )
+                behandlingMap as Map<String, Any?>
             }
 
             VedtaksperiodeResponse.Vedtaksperiode(
