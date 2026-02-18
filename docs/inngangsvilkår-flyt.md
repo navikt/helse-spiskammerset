@@ -39,16 +39,17 @@ note over spillkar: "Disse to (17 & 18) kan også være en melding<br/>for å sp
 Spleis (AvventerVilkårsprøving) ->> Spleis (AvventerHistorikk): Klar for beregning
 Spleis (AvventerHistorikk) ->> spillkar: @behov[.., "VurderteInngangsvilkår",...] Input: fnr + skjæringstidspunkt. Ekstra parametre: behandlingId + beregningId
 note over spillkar: Dette behovet kan virke noe rart når man leser dette<br/>diagrammet, ettersom de ble sendt rett over.<br/>Men vi kan være en forengelse som ikke hart gjort det.<br/>Dessuten kan det foreligge vurderinger fra saksbehandler.<br/>For å ha likt flyt spør man alltid.
-note over spillkar: "spillkar kan gjerne ha en stigende versjon, men virker <br/>ryddigst at fnr+skjæringstidspunkt+versjon også er en uuid inngangvilkårId
+note over spillkar: spillkar kan gjerne ha en stigende versjon, men virker <br/>ryddigst at fnr+skjæringstidspunkt+versjon også er en uuid inngangvilkårId
 note over spillkar: Løsning:<br/>{ "inngangvilkårId": "1a9eb446-425c-4e6a-9f71-beae951ec53b",<br/>"vurderteInngangsvilkår": [<br/>{ "kodeverk": "<§8-2 hovedregel kodeverk>", "vurdering": "OPPFYLT"},<br/>{ "kodeverk": "<§2 Medlemskap kodeverk>", "vurdering": "OPPFYLT"}<br/>]}
 spillkar ->> behovsakumulator: @løsning.VurderteInngangsvilkår
 behovsakumulator -->> behovsakumulator: Her slås det også sammen løsninger på<br/>andre behov som sendes ut i AvventerHistorikk
 behovsakumulator ->> spiskammerset: @løsning med @final:true
 spiskammerset ->> spiskammerset: Kobler beregningId mot behandlingId<br/> (for en forlengelse er ikke dette gjort før)
-spiskammerset ->> spiskammerset: Kobler beregningId mot inngangsvilkårId<br/>(som gjør det mulig å slå opp med det som<br/> ID i spiskammerset)
+spiskammerset ->> spiskammerset: Kobler inngangsvilkårId mot alle data-elementer beregningId<br/>allerede er koblet mot<br/>(for forlengelser er det ingenting)
 spiskammerset ->> spiskammerset: Lagrer på sikt ned fler løsninger mot beregningId (løpende vilkår)
 # Så er vi i spleis igjen
 spiskammerset ->> Spleis (AvventerHistorikk): @løsning med @persistert:true
+note over Spleis (AvventerHistorikk):Spleis bryr seg ikke om en komplett<br/>løsning før den<br/>også er persistert.
 Spleis (AvventerHistorikk) ->> Spleis (AvventerHistorikk): Bruker løsningen på VurderteInngangsvilkår<br/>for å avslå/innvilge dager på inngangsvilkår 
 Spleis (AvventerHistorikk) ->> spillkar: Vurdering av løpende vilkår/beregningsvilkår knyttet opp mot beregningId
 ```
