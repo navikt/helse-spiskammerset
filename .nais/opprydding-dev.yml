@@ -8,6 +8,12 @@ metadata:
     dbPolicyUser: spiskammersetbruker
 spec:
   image: {{image}}
+  port: 8080
+  startup:
+    path: isready
+    initialDelay: 20
+    periodSeconds: 5
+    failureThreshold: 9
   strategy:
     type: Recreate
   replicas:
