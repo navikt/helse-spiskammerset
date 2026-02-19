@@ -45,6 +45,7 @@ spec:
       - resource:
           apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
           kind: Project
+          name: tbd-dev-7ff9
         role: roles/cloudsql.client
   env:
     - name: KAFKA_RAPID_TOPIC
@@ -53,4 +54,8 @@ spec:
       value: tbd-spiskammerset-opprydding-v1
     - name: KAFKA_RESET_POLICY
       value: LATEST
+    - name: DATABASE_REGION
+      value: "europe-north1"
+    - name: DATABASE_INSTANCE
+      value: "spiskammerset"
 
