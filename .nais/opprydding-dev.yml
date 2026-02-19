@@ -5,6 +5,7 @@ metadata:
   namespace: tbd
   labels:
     team: tbd
+    dbPolicyUser: spiskammersetbruker
 spec:
   image: {{image}}
   strategy:

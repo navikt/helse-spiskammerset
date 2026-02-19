@@ -10,7 +10,7 @@ on:
       - 'build.gradle.kts'
       - 'settings.gradle.kts'
       - '.nais/opprydding-dev.yml'
-      - '.nais/opprydding-dev-dev.json'
+      - '.nais/dev-db-policy.yml'
 
 jobs:
   build:
@@ -51,6 +51,6 @@ jobs:
       - uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: dev-gcp
-          RESOURCE: .nais/opprydding-dev.yml
+          RESOURCE: .nais/opprydding-dev.yml, .nais/dev-db-policy.yml
           IMAGE: ${{ needs.build.outputs.image }}
 
