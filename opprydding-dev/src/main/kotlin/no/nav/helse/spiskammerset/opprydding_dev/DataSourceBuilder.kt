@@ -13,7 +13,7 @@ internal interface DataSourceBuilder {
 internal class DefaultDataSourceBuilder(env: Map<String, String>): DataSourceBuilder {
 
     private val baseConnectionConfig = HikariConfig().apply {
-        jdbcUrl = env.getValue("DATABASE_SPISKAMMERSET_OPPRYDDING_DEV_JDBC_URL")
+        jdbcUrl = env.getValue("DATABASE_SPISKAMMERSET_OPPRYDDING_DEV_URL")
     }
 
     private val appConfig = HikariConfig().apply {
