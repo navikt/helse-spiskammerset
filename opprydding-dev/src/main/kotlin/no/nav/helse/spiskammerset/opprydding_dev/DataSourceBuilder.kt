@@ -2,29 +2,38 @@ package no.nav.helse.spiskammerset.opprydding_dev
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import org.slf4j.LoggerFactory
-import javax.sql.DataSource
-import kotlin.getValue
+import java.time.Duration
 
-internal interface DataSourceBuilder {
-    val dataSource: DataSource
-}
+internal class DefaultDataSourceBuilder(env: Map<String, String>) {
 
-internal class DefaultDataSourceBuilder(env: Map<String, String>): DataSourceBuilder {
+    private val gcpProjectId: String = env.envValue("GCP_TEAM_PROJECT_ID")
+    private val databaseRegion: String = env.envValue("DATABASE_REGION")
+    private val databaseInstance: String = env.envValue("DATABASE_INSTANCE")
+    private val databaseUsername: String = env.envValue("DATABASE_SPISKAMMERSET_OPPRYDDING_DEV_USERNAME")
+    private val databasePassword: String = env.envValue("DATABASE_SPISKAMMERSET_OPPRYDDING_DEV_PASSWORD")
+    private val databaseName: String = env.envValue("DATABASE_SPISKAMMERSET_OPPRYDDING_DEV_DATABASE")
 
-    private val baseConnectionConfig = HikariConfig().apply {
-        jdbcUrl = env.getValue("DATABASE_SPISKAMMERSET_OPPRYDDING_DEV_URL")
+    private fun Map<String, String>.envValue(value: String) = requireNotNull(get(value)) { "$value must be set" }
+
+    private val hikariConfig = HikariConfig().apply {
+        jdbcUrl = String.format(
+            "jdbc:postgresql:///%s?%s&%s",
+            databaseName,
+            "cloudSqlInstance=$gcpProjectId:$databaseRegion:$databaseInstance",
+            "socketFactory=com.google.cloud.sql.postgres.SocketFactory"
+        )
+
+        username = databaseUsername
+        password = databasePassword
+
+        maximumPoolSize = 3
+        minimumIdle = 1
+        initializationFailTimeout = Duration.ofMinutes(1).toMillis()
+        connectionTimeout = Duration.ofSeconds(5).toMillis()
+        maxLifetime = Duration.ofMinutes(30).toMillis()
+        idleTimeout = Duration.ofMinutes(10).toMillis()
     }
 
-    private val appConfig = HikariConfig().apply {
-        baseConnectionConfig.copyStateTo(this)
-        maximumPoolSize = 2
-    }
+    internal fun getDataSource() = HikariDataSource(hikariConfig)
 
-    override val dataSource by lazy { HikariDataSource(appConfig) }
-
-
-    private companion object {
-        private val logger = LoggerFactory.getLogger(DataSourceBuilder::class.java)
-    }
 }

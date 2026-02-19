@@ -11,7 +11,7 @@ fun main() {
     val kafkaConfig = AivenConfig.default
     val consumerProducerFactory = ConsumerProducerFactory(kafkaConfig)
     val dataSourceBuilder = DefaultDataSourceBuilder(env)
-    val dataSource = dataSourceBuilder.dataSource
+    val dataSource = dataSourceBuilder.getDataSource()
 
 
     RapidApplication.create(env, consumerProducerFactory = consumerProducerFactory).apply {
