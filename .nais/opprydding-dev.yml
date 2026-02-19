@@ -47,6 +47,8 @@ spec:
           kind: Project
           name: tbd-dev-7ff9
         role: roles/cloudsql.client
+  envFrom:
+    - secret: google-sql-spiskammerset-spiskammerset-spiskammerset-o-5f7ab9e2
   env:
     - name: KAFKA_RAPID_TOPIC
       value: tbd.rapid.v1
