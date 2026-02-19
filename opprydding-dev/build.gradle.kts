@@ -1,3 +1,4 @@
+private val cloudSqlVersion = "1.28.1"
 val rapidsAndRiversVersion: String by project
 val tbdLibsVersion: String by project
 val hikariCPVersion: String by project
@@ -7,6 +8,7 @@ dependencies {
     api("com.github.navikt:rapids-and-rivers:$rapidsAndRiversVersion")
     api("com.github.navikt.tbd-libs:azure-token-client-default:$tbdLibsVersion")
 
+    implementation("com.google.cloud.sql:postgres-socket-factory:${cloudSqlVersion}")
     implementation("org.postgresql:postgresql:${postgresqlVersion}")
     implementation("com.zaxxer:HikariCP:${hikariCPVersion}")
     implementation("com.github.navikt.tbd-libs:sql-dsl:${tbdLibsVersion}")
