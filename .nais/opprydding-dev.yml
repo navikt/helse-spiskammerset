@@ -40,10 +40,12 @@ spec:
       rules:
         - application: logging
           namespace: nais-system
-  azure:
-    application:
-      enabled: true
-      tenant: nav.no
+  gcp:
+    permissions:
+      - resource:
+          apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+          kind: Project
+        role: roles/cloudsql.client
   env:
     - name: KAFKA_RAPID_TOPIC
       value: tbd.rapid.v1
