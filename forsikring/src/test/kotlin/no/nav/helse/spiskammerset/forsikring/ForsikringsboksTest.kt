@@ -26,7 +26,18 @@ internal class ForsikringsboksTest {
             Forsikringsboks.leggPå(hyllenummer, innJson(100, true, 500_000, "SelvstendigForsikring"), this)
 
             val hentetInnhold = Forsikringsboks.taNedFra(hyllenummer, this)
-            assertLikJsonInnhold(utInnhold(100,1), hentetInnhold)
+            assertLikJsonInnhold(utInnhold(100,1, 500_000), hentetInnhold)
+        }
+    }
+
+    @Test
+    fun `henter ut forsikringsinformasjon for KollektivJordbrukerforsikring fra benyttet_grunnlagsdata_for_beregning`() = databaseTest { dataSource ->
+        dataSource.connection {
+            val hyllenummer = opprettHylle()
+            Forsikringsboks.leggPå(hyllenummer, innJson(100, false, 0, "KollektivJordbruksforsikring"), this)
+
+            val hentetInnhold = Forsikringsboks.taNedFra(hyllenummer, this)
+            assertLikJsonInnhold(utInnhold(100,17, null), hentetInnhold)
         }
     }
 
@@ -83,9 +94,11 @@ internal class ForsikringsboksTest {
         return jacksonObjectMapper().readTree(json) as ObjectNode
     }
 
-    private fun utInnhold(dekningsgrad: Int, dag1Eller17: Int) = Innhold(versjon = Versjon(1), innhold = mapOf(
+    private fun utInnhold(dekningsgrad: Int, dag1Eller17: Int, premiegrunnlag: Int?) = Innhold(versjon = Versjon(1), innhold = mapOf(
         "dekningsgrad" to dekningsgrad,
         "dag1Eller17" to dag1Eller17
+    ).plus(
+        if(premiegrunnlag == null) emptyMap() else mapOf("premiegrunnlag" to premiegrunnlag)
     ))
 
     private fun assertLikJsonInnhold(expected: Innhold, actual: Innhold?) {

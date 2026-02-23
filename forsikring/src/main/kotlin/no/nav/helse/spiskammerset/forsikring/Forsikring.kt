@@ -1,6 +1,7 @@
 package no.nav.helse.spiskammerset.forsikring
 
 import no.nav.helse.spiskammerset.oppbevaringsboks.Versjon
+import kotlin.collections.emptyMap
 
 internal data class Forsikring(val dekningsgrad: Int, val navOvertarAnsvarForVentetid: Boolean, val premiegrunnlag: Int, val arbeidssituasjonForsikringstype: ArbeidssituasjonForsikringstype, val versjon: Versjon) {
     init {
@@ -19,6 +20,11 @@ internal data class Forsikring(val dekningsgrad: Int, val navOvertarAnsvarForVen
         "dag1Eller17" to when (navOvertarAnsvarForVentetid) {
             true -> 1
             false -> 17
+        }
+    ).plus(
+        when(arbeidssituasjonForsikringstype) {
+            ArbeidssituasjonForsikringstype.KollektivJordbruksforsikring -> emptyMap()
+            ArbeidssituasjonForsikringstype.SelvstendigForsikring -> mapOf("premiegrunnlag" to premiegrunnlag)
         }
     )
     enum class ArbeidssituasjonForsikringstype {
