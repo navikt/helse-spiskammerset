@@ -10,7 +10,7 @@ val kotliqueryVersion = "1.9.0"
 val postgresqlVersion = "42.7.7"
 
 plugins {
-    kotlin("jvm") version "2.2.21" apply false
+    kotlin("jvm") version "2.3.0" apply false
 }
 
 allprojects {
