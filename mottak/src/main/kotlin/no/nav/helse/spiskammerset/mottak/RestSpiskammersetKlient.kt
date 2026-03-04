@@ -1,6 +1,7 @@
 package no.nav.helse.spiskammerset.mottak
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
@@ -12,11 +13,15 @@ import java.net.http.HttpResponse
 import java.time.Duration
 import java.util.*
 
-internal class SpiskammersetKlient(
+interface SpiskammersetKlient {
+    fun lagreLøsninger(packet: JsonMessage): Map<String, UUID>
+}
+
+internal class RestSpiskammersetKlient(
     private val httpClient: HttpClient,
     private val azureTokenProvider: AzureTokenProvider,
     env: Map<String, String>
-) {
+) : SpiskammersetKlient {
     private val cluster = env["NAIS_CLUSTER_NAME"]?.lowercase() ?: "prod-gcp"
     private val scope = "api://$cluster.tbd.spiskammerset/.default"
 
@@ -29,13 +34,18 @@ internal class SpiskammersetKlient(
         )
     }
 
-    fun lagreLøsninger(packet: JsonMessage): JsonNode {
-        return post(
+    override fun lagreLøsninger(packet: JsonMessage): Map<String, UUID> {
+        val response = post(
             endepunkt = "lagre-losninger",
             requestBody = packet.toJson(),
             callId = UUID.fromString(packet["@id"].asText()),
             forventetResponseCode = 200
         )
+
+        val lagredeLøsningIder = response.path("lagredeLøsningIder") as ObjectNode
+        return lagredeLøsningIder.fields().asSequence().associate { (løsningsnavn, id) ->
+            løsningsnavn to UUID.fromString(id.asText())
+        }
     }
 
     private fun post(endepunkt: String, requestBody: String, callId: UUID, forventetResponseCode: Int): JsonNode {

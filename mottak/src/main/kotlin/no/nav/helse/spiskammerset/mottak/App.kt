@@ -9,7 +9,7 @@ import java.net.http.HttpClient
 fun main() {
     val env = System.getenv()
 
-    val spiskammersetKlient = SpiskammersetKlient(
+    val spiskammersetKlient = RestSpiskammersetKlient(
         httpClient = HttpClient.newHttpClient(),
         azureTokenProvider = createAzureTokenClientFromEnvironment(env),
         env = env

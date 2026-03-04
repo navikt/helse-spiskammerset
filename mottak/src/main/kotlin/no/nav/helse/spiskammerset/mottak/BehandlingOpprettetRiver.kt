@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory
 
 internal class BehandlingOpprettetRiver(
     rapidsConnection: RapidsConnection,
-    private val spiskammersetKlient: SpiskammersetKlient
+    private val spiskammersetKlient: RestSpiskammersetKlient
 ) : River.PacketListener {
     init {
         River(rapidsConnection).apply {
