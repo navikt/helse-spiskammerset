@@ -29,6 +29,15 @@ internal class SpiskammersetKlient(
         )
     }
 
+    fun lagreLøsninger(packet: JsonMessage): JsonNode {
+        return post(
+            endepunkt = "lagre-losninger",
+            requestBody = packet.toJson(),
+            callId = UUID.fromString(packet["@id"].asText()),
+            forventetResponseCode = 200
+        )
+    }
+
     private fun post(endepunkt: String, requestBody: String, callId: UUID, forventetResponseCode: Int): JsonNode {
         val accessToken = azureTokenProvider.bearerToken(scope).getOrThrow()
         val request = HttpRequest
