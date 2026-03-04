@@ -69,6 +69,10 @@ spec:
           permissions:
             roles:
               - "spissmus"
+        - application: spre-forsikringsoppgaver
+          permissions:
+            roles:
+              - "spissmus"
     outbound:
       rules:
         - application: logging
