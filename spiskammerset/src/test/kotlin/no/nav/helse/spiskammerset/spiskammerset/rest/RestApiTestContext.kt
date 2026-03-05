@@ -71,6 +71,20 @@ internal data class RestApiTestContext(
         assertResponse(response.status, response.bodyAsText())
     }
 
+    suspend fun lagreLøsninger(
+        jsonBody: String,
+        accessToken: String = spiskammersetMaskinAccessToken("husmor"),
+        assertResponse: (status: HttpStatusCode, responseBody: String) -> Unit = { mottattStatus, _ ->
+            assertEquals(HttpStatusCode.OK, mottattStatus)
+        }
+    ) {
+        val response = client.post("/lagre-losninger") {
+            header("Authorization", "Bearer $accessToken")
+            setBody(jsonBody)
+        }
+        assertResponse(response.status, response.bodyAsText())
+    }
+
     suspend fun hentPerioder(
         personidentifikatorer: List<String>,
         fom: LocalDate,

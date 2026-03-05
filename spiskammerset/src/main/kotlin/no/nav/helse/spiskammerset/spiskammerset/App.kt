@@ -2,7 +2,6 @@ package no.nav.helse.spiskammerset.spiskammerset
 
 import com.auth0.jwk.JwkProviderBuilder
 import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.naisful.naisApp
@@ -19,10 +18,7 @@ import no.nav.helse.spiskammerset.forsikring.Forsikringsboks
 import no.nav.helse.spiskammerset.oppbevaringsboks.Oppbevaringsboks
 import no.nav.helse.spiskammerset.spiskammerset.db.DataSourceBuilder
 import no.nav.helse.spiskammerset.spiskammerset.db.DefaultDataSourceBuilder
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.Hendelsehåndterer
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.hendelseApi
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.oppbevaringsbokserApi
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.perioderApi
+import no.nav.helse.spiskammerset.spiskammerset.reisverk.*
 import org.slf4j.LoggerFactory
 import java.net.URI
 
@@ -92,6 +88,7 @@ internal fun Application.spiskammerset(
         }
         authenticate("husmor") {
             hendelseApi(hendelsehåndterer)
+            lagreLøsningerApi(dataSource, oppbevaringsbokser)
         }
     }
 }

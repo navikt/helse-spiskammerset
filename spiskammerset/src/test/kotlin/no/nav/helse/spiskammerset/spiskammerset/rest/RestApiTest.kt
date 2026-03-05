@@ -4,6 +4,7 @@ import com.github.navikt.tbd_libs.naisful.test.naisfulTestApp
 import com.github.navikt.tbd_libs.signed_jwt_issuer_test.Issuer
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import no.nav.helse.spiskammerset.oppbevaringsboks.Oppbevaringsboks
 import no.nav.helse.spiskammerset.spiskammerset.databaseContainer
 import no.nav.helse.spiskammerset.spiskammerset.db.DataSourceBuilder
 import no.nav.helse.spiskammerset.spiskammerset.objectmapper
@@ -14,7 +15,13 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 
 @TestInstance(PER_CLASS)
-internal abstract class RestApiTest {
+internal abstract class RestApiTest(
+    private val oppbevaringsbokser: List<Oppbevaringsboks> = listOf(
+        TestOppbevaringsboks(eventName = "test_event_1", etikett = "info1"),
+        TestOppbevaringsboks(eventName = "test_event_2", etikett = "info2"),
+        TestOppbevaringsboks(eventName = "test_event_3", etikett = "info3")
+    )
+) {
 
     private val issuer = Issuer("lokal", "http://audience")
     private val testDataSource by lazy { databaseContainer.nyTilkobling() }
@@ -42,11 +49,7 @@ internal abstract class RestApiTest {
                         "AZURE_OPENID_CONFIG_ISSUER" to issuer.navn,
                         "AZURE_APP_CLIENT_ID" to issuer.audience
                     ),
-                    oppbevaringsbokser = listOf(
-                        TestOppbevaringsboks(eventName = "test_event_1", etikett = "info1"),
-                        TestOppbevaringsboks(eventName = "test_event_2", etikett = "info2"),
-                        TestOppbevaringsboks(eventName = "test_event_3", etikett = "info3")
-                    )
+                    oppbevaringsbokser = oppbevaringsbokser
                 )
             },
             objectMapper = objectmapper,
