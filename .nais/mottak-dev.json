@@ -1,5 +1,5 @@
 {
   "kafkaPool": "nav-dev",
-  "tenant": "nav.no",
+  "tenant" : "trygdeetaten.no",
   "consumerGroupId": "tbd-spiskammerset-v1"
 }

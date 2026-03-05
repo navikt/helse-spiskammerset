@@ -48,12 +48,12 @@ spec:
   azure:
     application:
       enabled: true
-      tenant: nav.no
+      tenant : {{ tenant }}
       claims:
         extra:
           - "NAVident"
         groups:
-          - id: "c0227409-2085-4eb2-b487-c4ba270986a3" # nais-tbd
+          - id: {{ group }} # nais-tbd
   accessPolicy:
     inbound:
       rules:
