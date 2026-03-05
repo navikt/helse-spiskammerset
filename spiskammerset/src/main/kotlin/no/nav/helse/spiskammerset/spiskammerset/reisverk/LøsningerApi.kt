@@ -32,11 +32,27 @@ internal fun Route.lagreLøsningerApi(dataSource: DataSource, oppbevaringsbokser
     }
 }
 
+internal fun Route.hentLøsningerApi(dataSource: DataSource, oppbevaringsbokser: List<Oppbevaringsboks>) {
+    get("/opplysning/{lagringId}") {
+        håndterRequest {
+            val lagringId = LagringId(URI(call.parameters["lagringId"].toString()))
+            val oppbevaringsboks = oppbevaringsbokser.firstOrNull { it.etikett == lagringId.etikett }
+                ?: return@håndterRequest call.respond(HttpStatusCode.NotFound)
+            val innhold = dataSource.connection {
+                oppbevaringsboks.taUt(lagringId.id, this)
+            } ?: return@håndterRequest call.respond(HttpStatusCode.NotFound)
+
+            call.respond(HttpStatusCode.OK, innhold.tilJson())
+        }
+    }
+}
+
 data class LagringId(private val uri: URI) {
     init {
         require(uri.scheme.lowercase() == "urn")
         require(uri.schemeSpecificPart.split(":").size == 2)
     }
-    val etikett: String = requireNotNull(uri.schemeSpecificPart.split(":").first().takeUnless { it.isBlank() } )
-    val id: String = requireNotNull(uri.schemeSpecificPart.split(":").last().takeUnless { it.isBlank() } )
+
+    val etikett: String = requireNotNull(uri.schemeSpecificPart.split(":").first().takeUnless { it.isBlank() })
+    val id: String = requireNotNull(uri.schemeSpecificPart.split(":").last().takeUnless { it.isBlank() })
 }

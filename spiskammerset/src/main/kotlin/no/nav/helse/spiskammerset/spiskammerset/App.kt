@@ -85,6 +85,7 @@ internal fun Application.spiskammerset(
         authenticate("spissmus") {
             perioderApi(dataSource)
             oppbevaringsbokserApi(dataSource, oppbevaringsbokser)
+            hentLøsningerApi(dataSource, oppbevaringsbokser)
         }
         authenticate("husmor") {
             hendelseApi(hendelsehåndterer)

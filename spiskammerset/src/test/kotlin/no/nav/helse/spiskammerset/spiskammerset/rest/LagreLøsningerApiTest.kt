@@ -56,6 +56,46 @@ internal class LagreLøsningerApiTest : RestApiTest(oppbevaringsbokser = listOf(
             }
         )
 
-        // TODO hente innholdet fra boksen fra id
+        hentLøsning(
+            lagringId = "urn:TøyseteBehov1:00000000-0000-0000-0000-000000000001",
+            assertResponse = { status, responseBody ->
+                assertEquals(HttpStatusCode.OK, status)
+                @Language("JSON")
+                val forventetResponse =
+                    """
+                    {
+                      "innhold": "Kult innhold",
+                      "versjon": 5,
+                      "epoch": "1970-01-01T00:00:00"
+                    }
+                    """
+                assertJsonEquals(forventetResponse, responseBody)
+            }
+        )
+
+        hentLøsning(
+            lagringId = "urn:TøyseteBehov2:00000000-0000-0000-0000-000000000002",
+            assertResponse = { status, _ ->
+                assertEquals(HttpStatusCode.NotFound, status)
+            }
+        )
+
+        hentLøsning(
+            lagringId = "urn:TøyseteBehov3:00000000-0000-0000-0000-000000000003",
+            assertResponse = { status, responseBody ->
+                assertEquals(HttpStatusCode.OK, status)
+                @Language("JSON")
+                val forventetResponse =
+                    """
+                    {
+                      "innhold": "3",
+                      "versjon": 5,
+                      "epoch": "1970-01-01T00:00:00"
+                    }
+                    """
+                assertJsonEquals(forventetResponse, responseBody)
+            }
+        )
+
     }
 }

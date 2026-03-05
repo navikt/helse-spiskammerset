@@ -26,20 +26,20 @@ data class TestOppbevaringsboks(private val eventName: String, override val etik
 
 data class BehovLøsningTestOppbevaringsboks(private val løsningsnavn: String, private val id: UUID) : Oppbevaringsboks {
     override val etikett = løsningsnavn
-    private var verdien: String? = null
+    private var innhold: String? = null
 
     override fun puttI(json: ObjectNode, connection: Connection): UUID {
-        verdien = json.path("@løsning").path(løsningsnavn).path("verdien").asText()
+        innhold = json.path("innhold").asText()
         return id
     }
 
-    override fun taUt(id: UUID, connection: Connection): Innhold? {
-        if (this.id != id) return null
-        return when (verdien) {
+    override fun taUt(id: String, connection: Connection): Innhold? {
+        if (this.id.toString() != id) return null
+        return when (innhold) {
             null -> null
             else -> Innhold(
                 Versjon(5), mapOf(
-                    "verdien" to verdien,
+                    "innhold" to innhold,
                     "epoch" to LocalDate.EPOCH.atStartOfDay()
                 )
             )

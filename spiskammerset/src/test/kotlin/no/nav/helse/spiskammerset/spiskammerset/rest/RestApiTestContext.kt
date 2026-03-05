@@ -85,6 +85,19 @@ internal data class RestApiTestContext(
         assertResponse(response.status, response.bodyAsText())
     }
 
+    suspend fun hentLøsning(
+        lagringId: String,
+        accessToken: String = spiskammersetMaskinAccessToken("spissmus"),
+        callId: UUID = UUID.randomUUID(),
+        assertResponse: (status: HttpStatusCode, respondeBody: String) -> Unit
+    ) {
+        val response = client.get("/opplysning/$lagringId") {
+            header("Authorization", "Bearer $accessToken")
+            header("callId", callId.toString())
+        }
+        assertResponse(response.status, response.bodyAsText())
+    }
+
     suspend fun hentPerioder(
         personidentifikatorer: List<String>,
         fom: LocalDate,
