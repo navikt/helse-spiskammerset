@@ -7,6 +7,7 @@ import io.ktor.http.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.helse.spiskammerset.oppbevaringsboks.Oppbevaringsboks
+import java.net.URI
 import javax.sql.DataSource
 
 internal fun Route.lagreLøsningerApi(dataSource: DataSource, oppbevaringsbokser: List<Oppbevaringsboks>) {
@@ -29,4 +30,13 @@ internal fun Route.lagreLøsningerApi(dataSource: DataSource, oppbevaringsbokser
             call.respond(HttpStatusCode.OK, mapOf("lagredeLøsningIder" to lagredeLøsningIder))
         }
     }
+}
+
+data class LagringId(private val uri: URI) {
+    init {
+        require(uri.scheme.lowercase() == "urn")
+        require(uri.schemeSpecificPart.split(":").size == 2)
+    }
+    val etikett: String = requireNotNull(uri.schemeSpecificPart.split(":").first().takeUnless { it.isBlank() } )
+    val id: String = requireNotNull(uri.schemeSpecificPart.split(":").last().takeUnless { it.isBlank() } )
 }
