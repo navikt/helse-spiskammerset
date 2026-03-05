@@ -86,7 +86,7 @@ internal class LøsningContentEnricherRiverTest {
                     "forsikringstype": "ÅttiProsentFraDagEn",
                     "startdato": "2024-01-01",
                     "sluttdato": "2024-12-31",
-                    "lagringId" : "00000000-0000-0000-0000-000000000000"
+                    "lagringId" : "urn:SelvstendigForsikring:00000000-0000-0000-0000-000000000000"
                   },
                   "Medlemskap": {
                     "medlem": "VET IKKE"

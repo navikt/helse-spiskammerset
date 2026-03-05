@@ -11,6 +11,7 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
 import org.slf4j.LoggerFactory
+import java.net.URI
 
 internal class LøsningContentEnricherRiver(
     rapidsConnection: RapidsConnection,
@@ -41,7 +42,7 @@ internal class LøsningContentEnricherRiver(
             if (lagretId == null) {
                 løsningMedLøsningIder.set<JsonNode>(løsningsnavn, løsning)
             } else {
-                val løsningMedId = (løsning as ObjectNode).put("lagringId", lagretId.toString())
+                val løsningMedId = (løsning as ObjectNode).put("lagringId", URI("urn:$løsningsnavn:$lagretId").toString())
                 løsningMedLøsningIder.set(løsningsnavn, løsningMedId)
             }
         }
