@@ -1,9 +1,10 @@
 CREATE TABLE forsikring
 (
-    hyllenummer                     BIGINT      NOT NULL PRIMARY KEY,
-    opprettet                       TIMESTAMPTZ NOT NULL DEFAULT now(),
-    dekningsgrad                    INT         NOT NULL,
-    nav_overtar_ansvar_for_ventetid BOOLEAN     NOT NULL,
-    premiegrunnlag                  INT         NOT NULL,
-    versjon                         INT         NOT NULL
+    id              UUID        NOT NULL PRIMARY KEY DEFAULT uuidv7(),
+    opprettet       TIMESTAMPTZ NOT NULL             DEFAULT now(),
+    forsikringstype TEXT        NOT NULL,
+    premiegrunnlag  INT         NOT NULL,
+    startdato       DATE        NOT NULL,
+    sluttdato       DATE,
+    versjon         INT         NOT NULL
 );

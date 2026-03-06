@@ -4,23 +4,20 @@ import com.github.navikt.tbd_libs.sql_dsl.firstOrNull
 import com.github.navikt.tbd_libs.sql_dsl.long
 import com.github.navikt.tbd_libs.sql_dsl.prepareStatementWithNamedParameters
 import com.github.navikt.tbd_libs.sql_dsl.single
-import no.nav.helse.spiskammerset.oppbevaringsboks.Hyllenummer
 import org.intellij.lang.annotations.Language
 import java.sql.Connection
-import java.sql.PreparedStatement
 
 internal fun Connection.håndtertTidligere(hendelse: Hendelse): Boolean {
     @Language("PostgreSQL")
-    val finnHylle = """SELECT id from hendelse WHERE hendelse_id = :hendelseId"""
+    val finnHendelse = """SELECT id from hendelse WHERE hendelse_id = :hendelseId"""
 
-    return prepareStatementWithNamedParameters(finnHylle) {
+    return prepareStatementWithNamedParameters(finnHendelse) {
         withParameter("hendelseId", hendelse.hendelseId.id)
     }.firstOrNull { it.long("id") } != null
 }
 
-internal fun Connection.lagreHendelse(hendelse: Hendelse, endredeHyller: Set<Hyllenummer>) {
-    check(endredeHyller.isNotEmpty()) {  "Ingen endrede hyller?? Hva skal det bety??" }
-
+internal fun Connection.lagreHendelse(hendelse: Hendelse) {
+    // TODO koble til reisverket til boksen
     @Language("PostgreSQL")
     val leggInnHendelse = """
         INSERT INTO hendelse (hendelse_id, hendelsetype, hendelse) 
@@ -28,18 +25,9 @@ internal fun Connection.lagreHendelse(hendelse: Hendelse, endredeHyller: Set<Hyl
         RETURNING id;
     """
 
-    val interntHyllenummer = prepareStatementWithNamedParameters(leggInnHendelse) {
+    prepareStatementWithNamedParameters(leggInnHendelse) {
         withParameter("hendelseId", hendelse.hendelseId.id)
         withParameter("hendelsetype", hendelse.hendelsetype)
         withParameter("hendelse", hendelse.json.toString())
     }.single { it.long("id") }
-
-
-    @Language("PostgreSQL")
-    val leggHendelserPåHylla = """
-        INSERT INTO hendelser_paa_hylla (intern_hendelse_id, hyllenummer) 
-        VALUES ${endredeHyller.joinToString { "($interntHyllenummer, ${it.nummer})" }}
-    """
-
-    prepareStatement(leggHendelserPåHylla).use(PreparedStatement::execute)
 }

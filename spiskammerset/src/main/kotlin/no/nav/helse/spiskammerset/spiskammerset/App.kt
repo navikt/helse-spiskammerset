@@ -16,12 +16,14 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.prometheus.metrics.model.registry.PrometheusRegistry
 import no.nav.helse.spiskammerset.forsikring.Forsikringsboks
 import no.nav.helse.spiskammerset.oppbevaringsboks.Oppbevaringsboks
+import no.nav.helse.spiskammerset.oppbevaringsboks.Oppbevaringsboks.Companion.valider
 import no.nav.helse.spiskammerset.spiskammerset.db.DataSourceBuilder
 import no.nav.helse.spiskammerset.spiskammerset.db.DefaultDataSourceBuilder
-import no.nav.helse.spiskammerset.spiskammerset.reisverk.*
+import no.nav.helse.spiskammerset.spiskammerset.reisverk.hentLøsningerApi
+import no.nav.helse.spiskammerset.spiskammerset.reisverk.lagreLøsningerApi
+import no.nav.helse.spiskammerset.spiskammerset.reisverk.oppbevaringsbokserApi
 import org.slf4j.LoggerFactory
 import java.net.URI
-import no.nav.helse.spiskammerset.oppbevaringsboks.Oppbevaringsboks.Companion.valider
 
 private val logg = LoggerFactory.getLogger(::main.javaClass)
 internal val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
@@ -81,17 +83,14 @@ internal fun Application.spiskammerset(
     }
 
     val dataSource = dataSourceBuilder.dataSource
-    val hendelsehåndterer = Hendelsehåndterer(dataSource, oppbevaringsbokser)
 
     routing {
         install(Gjestebok)
         authenticate("spissmus") {
-            perioderApi(dataSource)
             oppbevaringsbokserApi(dataSource, oppbevaringsbokser)
             hentLøsningerApi(dataSource, oppbevaringsbokser)
         }
         authenticate("husmor") {
-            hendelseApi(hendelsehåndterer)
             lagreLøsningerApi(dataSource, oppbevaringsbokser)
         }
     }

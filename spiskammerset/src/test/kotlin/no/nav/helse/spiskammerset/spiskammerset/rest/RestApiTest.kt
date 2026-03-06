@@ -15,13 +15,7 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
 
 @TestInstance(Lifecycle.PER_METHOD)
-internal abstract class RestApiTest(
-    private val oppbevaringsbokser: List<Oppbevaringsboks> = listOf(
-        TestOppbevaringsboks(eventName = "test_event_1", etikett = "info1"),
-        TestOppbevaringsboks(eventName = "test_event_2", etikett = "info2"),
-        TestOppbevaringsboks(eventName = "test_event_3", etikett = "info3")
-    )
-) {
+internal abstract class RestApiTest(private val oppbevaringsbokser: List<Oppbevaringsboks>) {
 
     private val issuer = Issuer("lokal", "http://audience")
     private val testDataSource by lazy { databaseContainer.nyTilkobling() }

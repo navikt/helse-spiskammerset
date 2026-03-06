@@ -6,12 +6,9 @@ import java.util.*
 
 interface Oppbevaringsboks {
     val etikett: String
-    val behovsnavn: Set<String> get() = emptySet()
-    @Deprecated("Bruk puttI") fun leggPå(hyllenummer: Hyllenummer, json: ObjectNode, connection: Connection): Innholdsstatus = error("Ikke implementert")
-    @Deprecated("Bruk taUt") fun taNedFra(hyllenummer: Hyllenummer, connection: Connection): Innhold? = error("Ikke implementert")
-    // TODO disse to skal erstatte leggPå og taNedFra
-    fun puttI(json: ObjectNode, connection: Connection): UUID = error("puttI er ikke implementert")
-    fun taUt(id: UUID, connection: Connection): Innhold? = error("taUt er ikke implementert")
+    val behovsnavn: Set<String>
+    fun puttI(json: ObjectNode, connection: Connection): UUID
+    fun taUt(id: UUID, connection: Connection): Innhold?
 
     companion object {
         fun List<Oppbevaringsboks>.valider() {

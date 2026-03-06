@@ -1,53 +1,47 @@
 package no.nav.helse.spiskammerset.forsikring
 
-import com.github.navikt.tbd_libs.sql_dsl.boolean
-import com.github.navikt.tbd_libs.sql_dsl.firstOrNull
-import com.github.navikt.tbd_libs.sql_dsl.int
-import com.github.navikt.tbd_libs.sql_dsl.prepareStatementWithNamedParameters
-import com.github.navikt.tbd_libs.sql_dsl.string
-import no.nav.helse.spiskammerset.forsikring.Forsikring.ArbeidssituasjonForsikringstype
-import no.nav.helse.spiskammerset.oppbevaringsboks.Hyllenummer
+import com.github.navikt.tbd_libs.sql_dsl.*
 import no.nav.helse.spiskammerset.oppbevaringsboks.Versjon
 import org.intellij.lang.annotations.Language
 import java.sql.Connection
+import java.util.*
 
 internal class ForsikringDao(private val connection: Connection) {
 
-    internal fun lagre(forsikring: Forsikring, hyllenummer: Hyllenummer) {
+    internal fun lagre(forsikring: Forsikring): UUID {
         @Language("PostgreSQL")
         val query = """ 
-            INSERT INTO forsikring (dekningsgrad, nav_overtar_ansvar_for_ventetid, premiegrunnlag, arbeidssituasjonForsikringstype, hyllenummer, versjon) 
-            VALUES (:dekningsgrad, :nav_overtar_ansvar_for_ventetid, :premiegrunnlag, :arbeidssituasjonForsikringstype, :hyllenummer, :versjon) 
-            ON CONFLICT (hyllenummer) DO UPDATE SET 
-                dekningsgrad = excluded.dekningsgrad, 
-                nav_overtar_ansvar_for_ventetid = excluded.nav_overtar_ansvar_for_ventetid, 
-                premiegrunnlag = excluded.premiegrunnlag,
-                versjon = excluded.versjon
+            INSERT INTO forsikring (forsikringstype, premiegrunnlag, startdato, sluttdato, versjon) 
+            VALUES (:forsikringstype, :premiegrunnlag, :startdato, :sluttdato, :versjon)
+            RETURNING id
             """
 
-        connection.prepareStatementWithNamedParameters(query) {
-            withParameter("dekningsgrad", forsikring.dekningsgrad)
-            withParameter("nav_overtar_ansvar_for_ventetid", forsikring.navOvertarAnsvarForVentetid)
+        return connection.prepareStatementWithNamedParameters(query) {
+            withParameter("forsikringstype", forsikring.forsikringstype)
             withParameter("premiegrunnlag", forsikring.premiegrunnlag)
-            withParameter("arbeidssituasjonForsikringstype", forsikring.arbeidssituasjonForsikringstype.name)
-            withParameter("hyllenummer", hyllenummer.nummer)
+            withParameter("startdato", forsikring.startdato)
+            if (forsikring.sluttdato != null) {
+                withParameter("sluttdato", forsikring.sluttdato)
+            } else {
+                withNull("sluttdato")
+            }
             withParameter("versjon", forsikring.versjon.nummer)
-        }.use { it.executeUpdate() }
+        }.single { it.uuid("id") }
     }
 
-    internal fun hent(hyllenummer: Hyllenummer): Forsikring? {
+    internal fun hent(id: UUID): Forsikring? {
         @Language("PostgreSQL")
         val query =
-            """ SELECT dekningsgrad, nav_overtar_ansvar_for_ventetid, premiegrunnlag, arbeidssituasjonForsikringstype, versjon FROM forsikring WHERE hyllenummer=:hyllenummer """
+            """ SELECT forsikringstype, premiegrunnlag, startdato, sluttdato, versjon FROM forsikring WHERE id =:id """
 
         return connection.prepareStatementWithNamedParameters(query) {
-            withParameter("hyllenummer", hyllenummer.nummer)
+            withParameter("id", id)
         }.firstOrNull {
             Forsikring(
-                dekningsgrad = it.int("dekningsgrad"),
-                navOvertarAnsvarForVentetid = it.boolean("nav_overtar_ansvar_for_ventetid"),
+                forsikringstype = it.string("forsikringstype"),
                 premiegrunnlag = it.int("premiegrunnlag"),
-                arbeidssituasjonForsikringstype = ArbeidssituasjonForsikringstype.valueOf(it.string("arbeidssituasjonForsikringstype")),
+                startdato = it.localDate("startdato"),
+                sluttdato = it.localDateOrNull("sluttdato"),
                 versjon = Versjon(it.int("versjon"))
             )
         }
