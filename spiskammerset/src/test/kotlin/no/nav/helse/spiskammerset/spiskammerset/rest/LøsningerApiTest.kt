@@ -6,9 +6,11 @@ import org.junit.jupiter.api.Test
 import java.util.*
 import kotlin.test.assertEquals
 
-internal class LagreLøsningerApiTest : RestApiTest(oppbevaringsbokser = listOf(
+internal class LøsningerApiTest : RestApiTest(oppbevaringsbokser = listOf(
     BehovLøsningTestOppbevaringsboks(setOf("TøyseteBehov1"), "tøysete-behov-1", UUID.fromString("00000000-0000-0000-0000-000000000001")),
-    BehovLøsningTestOppbevaringsboks(setOf("TøyseteBehov3"), "tøysete-behov-3", UUID.fromString("00000000-0000-0000-0000-000000000003"))
+    BehovLøsningTestOppbevaringsboks(setOf("TøyseteBehov3"), "tøysete-behov-3", UUID.fromString("00000000-0000-0000-0000-000000000003")),
+    BehovLøsningTestOppbevaringsboks(setOf("Faktating", "FaktatingV2"), "faktating", UUID.fromString("00000000-0000-0000-0000-000000000004"))
+
 )) {
 
     @Test
@@ -92,6 +94,99 @@ internal class LagreLøsningerApiTest : RestApiTest(oppbevaringsbokser = listOf(
                     """
                     {
                       "innhold": "3",
+                      "versjon": 5,
+                      "epoch": "1970-01-01T00:00:00"
+                    }
+                    """
+                assertJsonEquals(forventetResponse, responseBody)
+            }
+        )
+    }
+
+    @Test
+    fun `Flere behov som hører til samme oppbevaringsboks`() = restApiTest {
+        @Language("JSON")
+        val innkommendeMelding =
+            """
+        {
+          "@event_name": "behov",
+          "@behov": ["Faktating", "FaktatingV2"],
+          "fødselsnummer": "01010112345",
+          "@final": true,
+          "@lagreLøsninger": true,
+          "@løsning": {
+            "Faktating": {
+              "innhold": "Jeg er det gamle behovet"
+            },
+            "FaktatingV2": {
+              "innhold": "Og jeg er det nye"
+            }
+          },
+          "Faktating": {},
+          "FaktatingV2": {}
+        }
+        """
+
+        lagreLøsninger(
+            jsonBody = innkommendeMelding,
+            assertResponse = { status, _ ->
+                assertEquals(HttpStatusCode.InternalServerError, status)
+            }
+        )
+    }
+
+    @Test
+    fun `Flere behov som hører til samme oppbevaringsboks, men et skal ignoreres`() = restApiTest {
+        @Language("JSON")
+        val innkommendeMelding =
+            """
+            {
+              "@event_name": "behov",
+              "@behov": ["Faktating", "FaktatingV2"],
+              "fødselsnummer": "01010112345",
+              "@final": true,
+              "@lagreLøsninger": true,
+              "@løsning": {
+                "Faktating": {
+                  "innhold": "Jeg er det gamle behovet"
+                },
+                "FaktatingV2": {
+                  "innhold": "Og jeg er det nye"
+                }
+              },
+              "Faktating": {},
+              "FaktatingV2": {
+                "ignorer": true
+              }
+            }
+        """
+
+        lagreLøsninger(
+            jsonBody = innkommendeMelding,
+            assertResponse = { status, responseBody ->
+                assertEquals(HttpStatusCode.OK, status)
+                @Language("JSON")
+                val forventetResponse =
+                    """
+                    {
+                      "lagredeLøsningIder": {
+                        "faktating": "00000000-0000-0000-0000-000000000004"
+                      }
+                    }
+                    """
+                assertJsonEquals(forventetResponse, responseBody)
+            }
+        )
+
+        hentLøsning(
+            lagringId = "urn:faktating:00000000-0000-0000-0000-000000000004",
+            assertResponse = { status, responseBody ->
+                assertEquals(HttpStatusCode.OK, status)
+                @Language("JSON")
+                val forventetResponse =
+                    """
+                    {
+                      "innhold": "Jeg er det gamle behovet",
                       "versjon": 5,
                       "epoch": "1970-01-01T00:00:00"
                     }
