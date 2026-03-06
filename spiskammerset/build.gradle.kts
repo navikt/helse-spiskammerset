@@ -1,5 +1,4 @@
 val tbdLibsVersion: String by project
-val kotliqueryVersion = "1.9.0"
 val logbackClassicVersion = "1.5.25"
 val logbackEncoderVersion = "8.0"
 val ktorVersion = "3.2.3" // bør være samme som i <com.github.navikt.tbd-libs:naisful-app>
@@ -25,7 +24,6 @@ dependencies {
     implementation("com.zaxxer:HikariCP:${hikariCPVersion}")
     implementation("org.postgresql:postgresql:${postgresqlVersion}")
     implementation("com.github.navikt.tbd-libs:sql-dsl:${tbdLibsVersion}")
-    implementation("com.github.seratch:kotliquery:${kotliqueryVersion}")
 
     testImplementation("com.github.navikt.tbd-libs:postgres-testdatabaser:${tbdLibsVersion}")
     testImplementation("com.github.navikt.tbd-libs:naisful-test-app:${tbdLibsVersion}")

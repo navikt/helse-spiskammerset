@@ -14,7 +14,7 @@ import java.time.Duration
 import java.util.*
 
 interface SpiskammersetKlient {
-    fun lagreLøsninger(packet: JsonMessage): Map<String, UUID>
+    fun lagreLøsninger(packet: JsonMessage): Map<String, URI>
 }
 
 internal class RestSpiskammersetKlient(
@@ -34,7 +34,7 @@ internal class RestSpiskammersetKlient(
         )
     }
 
-    override fun lagreLøsninger(packet: JsonMessage): Map<String, UUID> {
+    override fun lagreLøsninger(packet: JsonMessage): Map<String, URI> {
         val response = post(
             endepunkt = "lagre-losninger",
             requestBody = packet.toJson(),
@@ -43,8 +43,8 @@ internal class RestSpiskammersetKlient(
         )
 
         val lagredeLøsningIder = response.path("lagredeLøsningIder") as ObjectNode
-        return lagredeLøsningIder.fields().asSequence().associate { (løsningsnavn, id) ->
-            løsningsnavn to UUID.fromString(id.asText())
+        return lagredeLøsningIder.properties().associate { (behovsnavn, urn) ->
+            behovsnavn to URI(urn.asText())
         }
     }
 

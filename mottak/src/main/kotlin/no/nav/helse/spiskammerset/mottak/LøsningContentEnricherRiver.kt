@@ -11,7 +11,6 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
 import org.slf4j.LoggerFactory
-import java.net.URI
 
 internal class LøsningContentEnricherRiver(
     rapidsConnection: RapidsConnection,
@@ -35,18 +34,18 @@ internal class LøsningContentEnricherRiver(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         sikkerlogg.info("Mottok opplysninger om behov:\n\t${packet.toJson()}")
-        val lagredeLøsningIder = lagreLøsninger(packet)
-        val løsningMedLøsningIder = jacksonObjectMapper().createObjectNode()
-        packet["@løsning"].fields().forEach { (løsningsnavn, løsning) ->
-            val lagretId = lagredeLøsningIder[løsningsnavn]
-            if (lagretId == null) {
-                løsningMedLøsningIder.set<JsonNode>(løsningsnavn, løsning)
+        val lagringIder = lagreLøsninger(packet)
+        val løsningMedLagringIder = jacksonObjectMapper().createObjectNode()
+        packet["@løsning"].properties().forEach { (behovsnavn, løsning) ->
+            val lagringId = lagringIder[behovsnavn]
+            if (lagringId == null) {
+                løsningMedLagringIder.set<JsonNode>(behovsnavn, løsning)
             } else {
-                val løsningMedId = (løsning as ObjectNode).put("lagringId", URI("urn:$løsningsnavn:$lagretId").toString())
-                løsningMedLøsningIder.set(løsningsnavn, løsningMedId)
+                val løsningMedLagringId = (løsning as ObjectNode).put("lagringId", lagringId.toString())
+                løsningMedLagringIder.set(behovsnavn, løsningMedLagringId)
             }
         }
-        packet["@løsning"] = løsningMedLøsningIder
+        packet["@løsning"] = løsningMedLagringIder
         packet["@lagret"] = true
         context.publish(packet.toJson())
     }

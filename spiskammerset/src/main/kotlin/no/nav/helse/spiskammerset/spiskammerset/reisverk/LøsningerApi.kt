@@ -23,21 +23,21 @@ internal fun Route.lagreLøsningerApi(dataSource: DataSource, oppbevaringsbokser
                     if (passendeOppbevaringsboks == null) return@mapNotNull null
                     val ignorer = komplettLøsning.path(behovsnavn).path("ignorer").asBoolean(false)
                     if (ignorer) return@mapNotNull null
-                    passendeOppbevaringsboks to løsning as ObjectNode
+                    SkalLagres(behovsnavn, passendeOppbevaringsboks, løsning as ObjectNode)
                 }
 
-            val etiketter = skalLagres.map { (oppbevaringsboks, _) -> oppbevaringsboks.etikett }
+            val etiketter = skalLagres.map { it.oppbevaringsboks.etikett }
             check(etiketter.size == etiketter.toSet().size) { "Meldingen inneholder flere løsninger som hører til samme oppvbevaringsboks! Dette skal ikke skje" }
 
             val lagredeLøsningIder = dataSource.connection {
                 transaction {
-                    skalLagres.associate { (oppbevaringsboks, løsning) ->
-                        oppbevaringsboks.etikett to oppbevaringsboks.puttI(løsning, this)
+                    skalLagres.associate { (behovsnavn, oppbevaringsboks, løsning) ->
+                        behovsnavn to LagringId(oppbevaringsboks.etikett, oppbevaringsboks.puttI(løsning, this)).toString()
                     }
                 }
             }
 
-            call.respond(HttpStatusCode.OK, mapOf("lagredeLøsningIder" to lagredeLøsningIder))
+            call.respond(HttpStatusCode.OK, mapOf("lagringIder" to lagredeLøsningIder))
         }
     }
 }
@@ -57,7 +57,10 @@ internal fun Route.hentLøsningerApi(dataSource: DataSource, oppbevaringsbokser:
     }
 }
 
+private data class SkalLagres(val behovsnavn: String, val oppbevaringsboks: Oppbevaringsboks, val løsning: ObjectNode)
+
 internal data class LagringId(private val uri: URI) {
+    internal constructor(etikett: String, id: UUID): this(URI("urn:grunnlagsdata:$etikett:$id"))
     private val biter = uri.schemeSpecificPart.split(":")
     init {
         require(uri.scheme.lowercase() == "urn")
@@ -67,4 +70,5 @@ internal data class LagringId(private val uri: URI) {
 
     val etikett = requireNotNull(biter[1].takeUnless { it.isBlank() })
     val id: UUID = UUID.fromString(requireNotNull(biter[2].takeUnless { it.isBlank() }))
+    override fun toString() = uri.toString()
 }

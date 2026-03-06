@@ -3,6 +3,7 @@ package no.nav.helse.spiskammerset.mottak
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
+import java.net.URI
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
@@ -11,7 +12,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.skyscreamer.jsonassert.JSONAssert
-import java.util.*
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class LøsningContentEnricherRiverTest {
@@ -20,8 +20,8 @@ internal class LøsningContentEnricherRiverTest {
     private val sisteSendtMelding get() = rapid.inspektør.message(rapid.inspektør.size.minus(1))
 
     private val testSpiskammersetKlient = object : SpiskammersetKlient {
-        override fun lagreLøsninger(packet: JsonMessage): Map<String, UUID> {
-            return mapOf("SelvstendigForsikring" to UUID.fromString("00000000-0000-0000-0000-000000000000"))
+        override fun lagreLøsninger(packet: JsonMessage): Map<String, URI> {
+            return mapOf("SelvstendigForsikring" to URI("urn:grunnlagsdata:forsikring:00000000-0000-0000-0000-000000000000"))
         }
     }
 
@@ -86,7 +86,7 @@ internal class LøsningContentEnricherRiverTest {
                     "forsikringstype": "ÅttiProsentFraDagEn",
                     "startdato": "2024-01-01",
                     "sluttdato": "2024-12-31",
-                    "lagringId" : "urn:SelvstendigForsikring:00000000-0000-0000-0000-000000000000"
+                    "lagringId" : "urn:grunnlagsdata:forsikring:00000000-0000-0000-0000-000000000000"
                   },
                   "Medlemskap": {
                     "medlem": "VET IKKE"
