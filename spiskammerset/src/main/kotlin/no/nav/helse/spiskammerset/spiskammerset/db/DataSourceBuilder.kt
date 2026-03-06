@@ -33,10 +33,8 @@ internal class DefaultDataSourceBuilder(env: Map<String, String>): DataSourceBui
         HikariDataSource(migrationConfig).use {
             Flyway.configure()
                 .dataSource(it)
-                .cleanDisabled(false)
                 .lockRetryCount(-1)
                 .load()
-                .also { it.clean() }
                 .migrate()
         }
         logger.info("Migrering ferdig!")
