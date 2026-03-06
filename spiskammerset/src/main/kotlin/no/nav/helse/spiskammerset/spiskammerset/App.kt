@@ -21,6 +21,7 @@ import no.nav.helse.spiskammerset.spiskammerset.db.DefaultDataSourceBuilder
 import no.nav.helse.spiskammerset.spiskammerset.reisverk.*
 import org.slf4j.LoggerFactory
 import java.net.URI
+import no.nav.helse.spiskammerset.oppbevaringsboks.Oppbevaringsboks.Companion.valider
 
 private val logg = LoggerFactory.getLogger(::main.javaClass)
 internal val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
@@ -65,7 +66,7 @@ internal fun Application.spiskammerset(
     dataSourceBuilder: DataSourceBuilder = DefaultDataSourceBuilder(env),
     oppbevaringsbokser: List<Oppbevaringsboks> = listOf<Oppbevaringsboks>(Forsikringsboks)
 ) {
-    // TODO: Validere at alle oppbearingsbokser har unike etiketter/behov
+    oppbevaringsbokser.valider()
 
     val azureApp = AzureApp(
         jwkProvider = JwkProviderBuilder(URI(env.getValue("AZURE_OPENID_CONFIG_JWKS_URI")).toURL()).build(),

@@ -13,4 +13,13 @@ interface Oppbevaringsboks {
     // TODO disse to skal erstatte leggPå og taNedFra
     fun puttI(json: ObjectNode, connection: Connection): UUID = error("puttI er ikke implementert")
     fun taUt(id: String, connection: Connection): Innhold? = error("taUt er ikke implementert")
+
+    companion object {
+        fun List<Oppbevaringsboks>.valider() {
+            val etiketter = map { it.etikett }
+            require(etiketter.size == etiketter.toSet().size) { "Det er flere oppbevaringsbokser med samme etiketter!!" }
+            val behov = flatMap { it.behovsnavn }
+            require(behov.size == behov.toSet().size) { "Det er flere oppbevaringsbokser som håndterer samme behov!!" }
+        }
+    }
 }
