@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.net.URI
 import java.net.URISyntaxException
+import java.util.*
 import kotlin.test.assertEquals
 
 internal class LagringIdTest {
@@ -14,7 +15,7 @@ internal class LagringIdTest {
         val lagringId = LagringId(URI("urn:grunnlagsdata:opplysning:00000000-0000-0000-0000-000000000001"))
 
         assertEquals("opplysning", lagringId.etikett)
-        assertEquals("00000000-0000-0000-0000-000000000001", lagringId.id)
+        assertEquals(UUID.fromString("00000000-0000-0000-0000-000000000001"), lagringId.id)
     }
 
     @Test

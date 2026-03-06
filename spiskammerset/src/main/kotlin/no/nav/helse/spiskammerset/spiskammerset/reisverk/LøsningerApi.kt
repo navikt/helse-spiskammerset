@@ -8,6 +8,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.helse.spiskammerset.oppbevaringsboks.Oppbevaringsboks
 import java.net.URI
+import java.util.*
 import javax.sql.DataSource
 
 internal fun Route.lagreLøsningerApi(dataSource: DataSource, oppbevaringsbokser: List<Oppbevaringsboks>) {
@@ -56,7 +57,7 @@ internal fun Route.hentLøsningerApi(dataSource: DataSource, oppbevaringsbokser:
     }
 }
 
-data class LagringId(private val uri: URI) {
+internal data class LagringId(private val uri: URI) {
     private val biter = uri.schemeSpecificPart.split(":")
     init {
         require(uri.scheme.lowercase() == "urn")
@@ -64,6 +65,6 @@ data class LagringId(private val uri: URI) {
         require(biter.first() == "grunnlagsdata")
     }
 
-    val etikett: String = requireNotNull(biter[1].takeUnless { it.isBlank() })
-    val id: String = requireNotNull(biter[2].takeUnless { it.isBlank() })
+    val etikett = requireNotNull(biter[1].takeUnless { it.isBlank() })
+    val id: UUID = UUID.fromString(requireNotNull(biter[2].takeUnless { it.isBlank() }))
 }

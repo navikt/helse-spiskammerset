@@ -36,8 +36,8 @@ data class BehovLøsningTestOppbevaringsboks(
         return id
     }
 
-    override fun taUt(id: String, connection: Connection): Innhold? {
-        if (this.id.toString() != id) return null
+    override fun taUt(id: UUID, connection: Connection): Innhold? {
+        if (this.id != id) return null
         return when (innhold) {
             null -> null
             else -> Innhold(

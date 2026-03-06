@@ -6,6 +6,7 @@ import no.nav.helse.spiskammerset.forsikring.Forsikring.ArbeidssituasjonForsikri
 import no.nav.helse.spiskammerset.forsikring.Forsikring.ArbeidssituasjonForsikringstype.SelvstendigForsikring
 import no.nav.helse.spiskammerset.oppbevaringsboks.*
 import java.sql.Connection
+import java.util.*
 
 data object Forsikringsboks: Oppbevaringsboks {
     override val etikett = "forsikring"
@@ -42,5 +43,13 @@ data object Forsikringsboks: Oppbevaringsboks {
             null -> null
             else -> Innhold(forsikring.versjon, forsikring.innhold)
         }
+    }
+
+    override fun puttI(json: ObjectNode, connection: Connection): UUID {
+        return super.puttI(json, connection)
+    }
+
+    override fun taUt(id: UUID, connection: Connection): Innhold? {
+        return super.taUt(id, connection)
     }
 }
