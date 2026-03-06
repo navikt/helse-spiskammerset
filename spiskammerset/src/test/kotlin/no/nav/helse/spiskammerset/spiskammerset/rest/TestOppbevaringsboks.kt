@@ -24,8 +24,11 @@ data class TestOppbevaringsboks(private val eventName: String, override val etik
     }
 }
 
-data class BehovLøsningTestOppbevaringsboks(private val løsningsnavn: String, private val id: UUID) : Oppbevaringsboks {
-    override val etikett = løsningsnavn
+data class BehovLøsningTestOppbevaringsboks(
+    override val behovsnavn: Set<String>,
+    override val etikett: String,
+    private val id: UUID
+) : Oppbevaringsboks {
     private var innhold: String? = null
 
     override fun puttI(json: ObjectNode, connection: Connection): UUID {

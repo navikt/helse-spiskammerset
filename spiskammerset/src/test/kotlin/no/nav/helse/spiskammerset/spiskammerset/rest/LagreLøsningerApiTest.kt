@@ -7,8 +7,8 @@ import java.util.*
 import kotlin.test.assertEquals
 
 internal class LagreLøsningerApiTest : RestApiTest(oppbevaringsbokser = listOf(
-    BehovLøsningTestOppbevaringsboks("TøyseteBehov1", UUID.fromString("00000000-0000-0000-0000-000000000001")),
-    BehovLøsningTestOppbevaringsboks("TøyseteBehov3", UUID.fromString("00000000-0000-0000-0000-000000000003")),
+    BehovLøsningTestOppbevaringsboks(setOf("TøyseteBehov1"), "tøysete-behov-1", UUID.fromString("00000000-0000-0000-0000-000000000001")),
+    BehovLøsningTestOppbevaringsboks(setOf("TøyseteBehov3"), "tøysete-behov-3", UUID.fromString("00000000-0000-0000-0000-000000000003"))
 )) {
 
     @Test
@@ -17,24 +17,27 @@ internal class LagreLøsningerApiTest : RestApiTest(oppbevaringsbokser = listOf(
         val innkommendeMelding =
             """
             {
-                "@event_name": "behov",
-                "@behov": ["TøyseteBehov1", "TøyseteBehov2", "TøyseteBehov3"],
-                "@id": "12345",
-                "@opprettet": "2024-06-01T12:00:00",
-                "fødselsnummer": "01010112345",
-                "@final": true,
-                "@lagreLøsninger": true,
-                "@løsning": {
-                  "TøyseteBehov1": {
-                    "innhold": "Kult innhold"
-                  },
-                  "TøyseteBehov2": {
-                    "innhold": true
-                  },
-                  "TøyseteBehov3": {
-                    "innhold": 3
-                  }
+              "@event_name": "behov",
+              "@behov": ["TøyseteBehov1", "TøyseteBehov2", "TøyseteBehov3"],
+              "@id": "12345",
+              "@opprettet": "2024-06-01T12:00:00",
+              "fødselsnummer": "01010112345",
+              "@final": true,
+              "@lagreLøsninger": true,
+              "@løsning": {
+                "TøyseteBehov1": {
+                  "innhold": "Kult innhold"
+                },
+                "TøyseteBehov2": {
+                  "innhold": true
+                },
+                "TøyseteBehov3": {
+                  "innhold": 3
                 }
+              },
+              "TøyseteBehov1": {},
+              "TøyseteBehov2": {},
+              "TøyseteBehov3": {}
             }
             """
 
@@ -47,8 +50,8 @@ internal class LagreLøsningerApiTest : RestApiTest(oppbevaringsbokser = listOf(
                     """
                     {
                       "lagredeLøsningIder": {
-                        "TøyseteBehov1": "00000000-0000-0000-0000-000000000001",
-                        "TøyseteBehov3": "00000000-0000-0000-0000-000000000003"
+                        "tøysete-behov-1": "00000000-0000-0000-0000-000000000001",
+                        "tøysete-behov-3": "00000000-0000-0000-0000-000000000003"
                       }
                     }
                     """
@@ -57,7 +60,7 @@ internal class LagreLøsningerApiTest : RestApiTest(oppbevaringsbokser = listOf(
         )
 
         hentLøsning(
-            lagringId = "urn:TøyseteBehov1:00000000-0000-0000-0000-000000000001",
+            lagringId = "urn:tøysete-behov-1:00000000-0000-0000-0000-000000000001",
             assertResponse = { status, responseBody ->
                 assertEquals(HttpStatusCode.OK, status)
                 @Language("JSON")
@@ -74,14 +77,14 @@ internal class LagreLøsningerApiTest : RestApiTest(oppbevaringsbokser = listOf(
         )
 
         hentLøsning(
-            lagringId = "urn:TøyseteBehov2:00000000-0000-0000-0000-000000000002",
+            lagringId = "urn:tøysete-behov-2:00000000-0000-0000-0000-000000000002",
             assertResponse = { status, _ ->
                 assertEquals(HttpStatusCode.NotFound, status)
             }
         )
 
         hentLøsning(
-            lagringId = "urn:TøyseteBehov3:00000000-0000-0000-0000-000000000003",
+            lagringId = "urn:tøysete-behov-3:00000000-0000-0000-0000-000000000003",
             assertResponse = { status, responseBody ->
                 assertEquals(HttpStatusCode.OK, status)
                 @Language("JSON")
@@ -96,6 +99,5 @@ internal class LagreLøsningerApiTest : RestApiTest(oppbevaringsbokser = listOf(
                 assertJsonEquals(forventetResponse, responseBody)
             }
         )
-
     }
 }

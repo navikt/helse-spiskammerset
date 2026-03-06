@@ -7,6 +7,7 @@ import java.util.*
 interface Oppbevaringsboks {
     // TODO skal klassen definere en generic id-klasse?
     val etikett: String
+    val behovsnavn: Set<String> get() = emptySet()
     @Deprecated("Bruk puttI") fun leggPå(hyllenummer: Hyllenummer, json: ObjectNode, connection: Connection): Innholdsstatus = error("Ikke implementert")
     @Deprecated("Bruk taUt") fun taNedFra(hyllenummer: Hyllenummer, connection: Connection): Innhold? = error("Ikke implementert")
     // TODO disse to skal erstatte leggPå og taNedFra

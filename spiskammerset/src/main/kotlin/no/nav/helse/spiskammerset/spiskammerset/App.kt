@@ -65,6 +65,8 @@ internal fun Application.spiskammerset(
     dataSourceBuilder: DataSourceBuilder = DefaultDataSourceBuilder(env),
     oppbevaringsbokser: List<Oppbevaringsboks> = listOf<Oppbevaringsboks>(Forsikringsboks)
 ) {
+    // TODO: Validere at alle oppbearingsbokser har unike etiketter/behov
+
     val azureApp = AzureApp(
         jwkProvider = JwkProviderBuilder(URI(env.getValue("AZURE_OPENID_CONFIG_JWKS_URI")).toURL()).build(),
         issuer = env.getValue("AZURE_OPENID_CONFIG_ISSUER"),

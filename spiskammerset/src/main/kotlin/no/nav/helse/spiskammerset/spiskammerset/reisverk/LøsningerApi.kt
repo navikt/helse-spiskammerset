@@ -14,14 +14,23 @@ internal fun Route.lagreLøsningerApi(dataSource: DataSource, oppbevaringsbokser
     post("/lagre-losninger") {
         håndterRequest {
             val komplettLøsning = call.json()
+
+            val skalLagres = komplettLøsning["@løsning"]
+                .properties()
+                .mapNotNull { (behovsnavn, løsning) ->
+                    val passendeOppbevaringsboks = oppbevaringsbokser.firstOrNull { behovsnavn in it.behovsnavn }
+                    if (passendeOppbevaringsboks == null) return@mapNotNull null
+                    val ignorer = komplettLøsning.path(behovsnavn).path("ignorer").asBoolean(false)
+                    if (ignorer) return@mapNotNull null
+                    passendeOppbevaringsboks to løsning as ObjectNode
+                }
+
+            val etiketter = skalLagres.map { (oppbevaringsboks, _) -> oppbevaringsboks.etikett }
+            check(etiketter.size == etiketter.toSet().size) { "Meldingen inneholder flere løsninger som hører til samme oppvbevaringsboks! Dette skal ikke skje" }
+
             val lagredeLøsningIder = dataSource.connection {
                 transaction {
-                    komplettLøsning["@løsning"].properties().mapNotNull { (løsningsnavn, løsning) ->
-                        val passendeOppbevaringsboks = oppbevaringsbokser.firstOrNull { it.etikett == løsningsnavn }
-
-                        if (passendeOppbevaringsboks == null) null
-                        else passendeOppbevaringsboks to løsning as ObjectNode
-                    }.associate { (oppbevaringsboks, løsning) ->
+                    skalLagres.associate { (oppbevaringsboks, løsning) ->
                         oppbevaringsboks.etikett to oppbevaringsboks.puttI(løsning, this)
                     }
                 }
