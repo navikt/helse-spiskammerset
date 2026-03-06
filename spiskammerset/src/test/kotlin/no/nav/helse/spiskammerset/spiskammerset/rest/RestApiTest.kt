@@ -9,12 +9,12 @@ import no.nav.helse.spiskammerset.spiskammerset.databaseContainer
 import no.nav.helse.spiskammerset.spiskammerset.db.DataSourceBuilder
 import no.nav.helse.spiskammerset.spiskammerset.objectmapper
 import no.nav.helse.spiskammerset.spiskammerset.spiskammerset
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
+import org.junit.jupiter.api.TestInstance.Lifecycle
 
-@TestInstance(PER_CLASS)
+@TestInstance(Lifecycle.PER_METHOD)
 internal abstract class RestApiTest(
     private val oppbevaringsbokser: List<Oppbevaringsboks> = listOf(
         TestOppbevaringsboks(eventName = "test_event_1", etikett = "info1"),
@@ -26,11 +26,11 @@ internal abstract class RestApiTest(
     private val issuer = Issuer("lokal", "http://audience")
     private val testDataSource by lazy { databaseContainer.nyTilkobling() }
 
-    @BeforeAll
+    @BeforeEach
     fun setup() {
         issuer.start()
     }
-    @AfterAll
+    @AfterEach
     fun teardown() {
         issuer.stop()
         databaseContainer.droppTilkobling(testDataSource)
