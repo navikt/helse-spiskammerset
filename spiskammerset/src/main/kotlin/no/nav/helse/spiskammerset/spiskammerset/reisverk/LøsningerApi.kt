@@ -57,11 +57,13 @@ internal fun Route.hentLøsningerApi(dataSource: DataSource, oppbevaringsbokser:
 }
 
 data class LagringId(private val uri: URI) {
+    private val biter = uri.schemeSpecificPart.split(":")
     init {
         require(uri.scheme.lowercase() == "urn")
-        require(uri.schemeSpecificPart.split(":").size == 2)
+        require(biter.size == 3)
+        require(biter.first() == "grunnlagsdata")
     }
 
-    val etikett: String = requireNotNull(uri.schemeSpecificPart.split(":").first().takeUnless { it.isBlank() })
-    val id: String = requireNotNull(uri.schemeSpecificPart.split(":").last().takeUnless { it.isBlank() })
+    val etikett: String = requireNotNull(biter[1].takeUnless { it.isBlank() })
+    val id: String = requireNotNull(biter[2].takeUnless { it.isBlank() })
 }

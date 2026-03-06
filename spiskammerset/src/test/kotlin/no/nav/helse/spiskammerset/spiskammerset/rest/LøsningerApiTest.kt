@@ -62,7 +62,7 @@ internal class LøsningerApiTest : RestApiTest(oppbevaringsbokser = listOf(
         )
 
         hentLøsning(
-            lagringId = "urn:tøysete-behov-1:00000000-0000-0000-0000-000000000001",
+            lagringId = "urn:grunnlagsdata:tøysete-behov-1:00000000-0000-0000-0000-000000000001",
             assertResponse = { status, responseBody ->
                 assertEquals(HttpStatusCode.OK, status)
                 @Language("JSON")
@@ -79,14 +79,14 @@ internal class LøsningerApiTest : RestApiTest(oppbevaringsbokser = listOf(
         )
 
         hentLøsning(
-            lagringId = "urn:tøysete-behov-2:00000000-0000-0000-0000-000000000002",
+            lagringId = "urn:grunnlagsdata:tøysete-behov-2:00000000-0000-0000-0000-000000000002",
             assertResponse = { status, _ ->
                 assertEquals(HttpStatusCode.NotFound, status)
             }
         )
 
         hentLøsning(
-            lagringId = "urn:tøysete-behov-3:00000000-0000-0000-0000-000000000003",
+            lagringId = "urn:grunnlagsdata:tøysete-behov-3:00000000-0000-0000-0000-000000000003",
             assertResponse = { status, responseBody ->
                 assertEquals(HttpStatusCode.OK, status)
                 @Language("JSON")
@@ -179,7 +179,7 @@ internal class LøsningerApiTest : RestApiTest(oppbevaringsbokser = listOf(
         )
 
         hentLøsning(
-            lagringId = "urn:faktating:00000000-0000-0000-0000-000000000004",
+            lagringId = "urn:grunnlagsdata:faktating:00000000-0000-0000-0000-000000000004",
             assertResponse = { status, responseBody ->
                 assertEquals(HttpStatusCode.OK, status)
                 @Language("JSON")

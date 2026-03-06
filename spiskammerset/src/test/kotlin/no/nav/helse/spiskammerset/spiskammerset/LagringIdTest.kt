@@ -11,24 +11,24 @@ internal class LagringIdTest {
 
     @Test
     fun `Parser en gyldig lagringId`() {
-        val lagringId = LagringId(URI("urn:Opplysning:00000000-0000-0000-0000-000000000001"))
+        val lagringId = LagringId(URI("urn:grunnlagsdata:opplysning:00000000-0000-0000-0000-000000000001"))
 
-        assertEquals("Opplysning", lagringId.etikett)
+        assertEquals("opplysning", lagringId.etikett)
         assertEquals("00000000-0000-0000-0000-000000000001", lagringId.id)
     }
 
     @Test
     fun `Parser en lagringId med ugyldig scheme`() {
-        assertThrows<IllegalArgumentException> { LagringId(URI("url:Opplysning:00000000-0000-0000-0000-000000000001")) }
+        assertThrows<IllegalArgumentException> { LagringId(URI("url:grunnlagsdata:opplysning:00000000-0000-0000-0000-000000000001")) }
     }
 
     @Test
     fun `Parser en lagringId med ugyldige biter`() {
-        assertThrows<IllegalArgumentException> { LagringId(URI("urn:Opplysning:00000000-0000-0000-0000-000000000001:tull")) }
-        assertThrows<IllegalArgumentException> { LagringId(URI("urn:Opplysning")) }
-        assertThrows<IllegalArgumentException> { LagringId(URI("urn:Opplysning:")) }
-        assertThrows<IllegalArgumentException> { LagringId(URI("urn::")) }
-        assertThrows<URISyntaxException> { LagringId(URI("urn: : ")) }
-        assertThrows<URISyntaxException> { LagringId(URI(":Opplysning:Id")) }
+        assertThrows<IllegalArgumentException> { LagringId(URI("urn:grunnlagsdata:opplysning:00000000-0000-0000-0000-000000000001:tull")) }
+        assertThrows<IllegalArgumentException> { LagringId(URI("urn:grunnlagsdata:opplysning")) }
+        assertThrows<IllegalArgumentException> { LagringId(URI("urn:grunnlagsdata:opplysning:")) }
+        assertThrows<IllegalArgumentException> { LagringId(URI("urn:grunnlagsdata::")) }
+        assertThrows<URISyntaxException> { LagringId(URI("urn:grunnlagsdata: : ")) }
+        assertThrows<URISyntaxException> { LagringId(URI(":grunnlagsdata:opplysning:Id")) }
     }
 }
