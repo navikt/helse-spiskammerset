@@ -1,6 +1,6 @@
 package no.nav.helse.spiskammerset.spiskammerset.rest
 
-import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.spiskammerset.oppbevaringsboks.Innhold
 import no.nav.helse.spiskammerset.oppbevaringsboks.Oppbevaringsboks
 import no.nav.helse.spiskammerset.oppbevaringsboks.Versjon
@@ -15,8 +15,11 @@ data class BehovLøsningTestOppbevaringsboks(
 ) : Oppbevaringsboks {
     private var innhold: String? = null
 
-    override fun puttI(json: ObjectNode, connection: Connection): UUID {
-        innhold = json.path("innhold").asText()
+    override fun puttI(json: JsonNode, connection: Connection): UUID {
+        innhold = when (json.isArray) {
+            true -> json.toString()
+            else -> json.path("innhold").asText()
+        }
         return id
     }
 

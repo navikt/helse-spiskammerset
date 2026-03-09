@@ -1,13 +1,13 @@
 package no.nav.helse.spiskammerset.oppbevaringsboks
 
-import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.databind.JsonNode
 import java.sql.Connection
 import java.util.*
 
 interface Oppbevaringsboks {
     val etikett: String
     val behovsnavn: Set<String>
-    fun puttI(json: ObjectNode, connection: Connection): UUID
+    fun puttI(json: JsonNode, connection: Connection): UUID
     fun taUt(id: UUID, connection: Connection): Innhold?
 
     companion object {

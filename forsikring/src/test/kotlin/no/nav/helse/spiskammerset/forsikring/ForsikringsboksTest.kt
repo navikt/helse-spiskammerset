@@ -1,6 +1,6 @@
 package no.nav.helse.spiskammerset.forsikring
 
-import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.sql_dsl.connection
 import no.nav.helse.spiskammerset.oppbevaringsboks.Innhold
@@ -39,17 +39,19 @@ internal class ForsikringsboksTest {
         premiegrunnlag: Int,
         startdato: LocalDate = 1.januar,
         sluttdato: LocalDate? = null
-    ): ObjectNode {
+    ): JsonNode {
         @Language("JSON")
         val json = """
-        {
-          "forsikringstype": "$forsikringstype",
-          "premiegrunnlag": $premiegrunnlag,
-          "startdato": "$startdato",
-          "sluttdato": ${ if(sluttdato != null) "$sluttdato" else null }
-        }
+        [
+            {
+              "forsikringstype": "$forsikringstype",
+              "premiegrunnlag": $premiegrunnlag,
+              "startdato": "$startdato",
+              "sluttdato": ${if (sluttdato != null) "$sluttdato" else null}
+            }
+        ]
         """
-        return jacksonObjectMapper().readTree(json) as ObjectNode
+        return jacksonObjectMapper().readTree(json)
     }
 
     private fun utInnhold(dekningsgrad: Int, dag1Eller17: Int, premiegrunnlag: Int) =

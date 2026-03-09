@@ -78,9 +78,7 @@ internal class LøsningerApiTest : RestApiTest(oppbevaringsbokser = listOf(
                 "TøyseteBehov2": {
                   "innhold": true
                 },
-                "TøyseteBehov3": {
-                  "innhold": 3
-                }
+                "TøyseteBehov3": [1,2,3]
               },
               "TøyseteBehov1": {},
               "TøyseteBehov2": {},
@@ -138,7 +136,7 @@ internal class LøsningerApiTest : RestApiTest(oppbevaringsbokser = listOf(
                 val forventetResponse =
                     """
                     {
-                      "innhold": "3",
+                      "innhold": "[1,2,3]",
                       "versjon": 5,
                       "epoch": "1970-01-01T00:00:00"
                     }

@@ -1,6 +1,6 @@
 package no.nav.helse.spiskammerset.spiskammerset.reisverk
 
-import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.sql_dsl.connection
 import com.github.navikt.tbd_libs.sql_dsl.transaction
 import io.ktor.http.*
@@ -28,7 +28,7 @@ internal fun Route.lagreLøsningerApi(dataSource: DataSource, oppbevaringsbokser
                     if (passendeOppbevaringsboks == null) return@mapNotNull null
                     val ignorer = komplettLøsning.path(behovsnavn).path("ignorer").asBoolean(false)
                     if (ignorer) return@mapNotNull null
-                    SkalLagres(behovsnavn, passendeOppbevaringsboks, løsning as ObjectNode)
+                    SkalLagres(behovsnavn, passendeOppbevaringsboks, løsning)
                 }
 
             val etiketter = skalLagres.map { it.oppbevaringsboks.etikett }
@@ -70,7 +70,7 @@ internal fun Route.hentLøsningerApi(dataSource: DataSource, oppbevaringsbokser:
     }
 }
 
-private data class SkalLagres(val behovsnavn: String, val oppbevaringsboks: Oppbevaringsboks, val løsning: ObjectNode)
+private data class SkalLagres(val behovsnavn: String, val oppbevaringsboks: Oppbevaringsboks, val løsning: JsonNode)
 
 internal data class LagringId(private val uri: URI) {
     internal constructor(etikett: String, id: UUID): this(URI("urn:grunnlagsdata:$etikett:$id"))
