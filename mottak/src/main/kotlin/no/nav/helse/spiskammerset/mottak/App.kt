@@ -21,5 +21,6 @@ fun main() {
     RapidApplication.create(env, consumerProducerFactory = consumerProducerFactory).apply {
         // BenyttetGrunnlagsdataForBeregningRiver(this, spiskammersetKlient)
         // BehandlingOpprettetRiver(this, spiskammersetKlient)
+        LøsningContentEnricherRiver(this, spiskammersetKlient)
     }.start()
 }

@@ -33,7 +33,7 @@ internal class LøsningContentEnricherRiver(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
-        sikkerlogg.info("Mottok opplysninger om behov:\n\t${packet.toJson()}")
+        sikkerlogg.info("Mottok komplett løsning på behov:\n\t${packet.toJson()}")
         when (val lagringsresultat = lagreLøsninger(packet)) {
             Lagringsresultat.LagretTidligere -> sikkerlogg.info("Ignorerer melding. Håndtert den tidligere")
             is Lagringsresultat.LagretNå -> {
@@ -50,7 +50,12 @@ internal class LøsningContentEnricherRiver(
                 }
                 packet["@løsning"] = løsningMedLagringIder
                 packet["@lagret"] = true
-                context.publish(packet.toJson())
+                val enriched = packet.toJson()
+
+                if (lagringsresultat.lagringIder.size == 0) sikkerlogg.info("Republiserer komplett løsning på behov uten å lagre ned noen løsninger:\n\t${enriched}")
+                else sikkerlogg.info("Republiserer komplett løsning på behov hvor ${lagringsresultat.lagringIder.size} løsninger har blitt lagret ned (${lagringsresultat.lagringIder.keys.joinToString()}):\n\t${enriched}")
+
+                context.publish(enriched)
             }
         }
     }
@@ -58,12 +63,12 @@ internal class LøsningContentEnricherRiver(
     private fun lagreLøsninger(packet: JsonMessage) = try {
         spiskammersetKlient.lagreLøsninger(packet)
     } catch (error: Exception) {
-        sikkerlogg.error("Feil ved håndtering av behov", error)
+        sikkerlogg.error("Feil ved håndtering av komplett løsning", error)
         throw error
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
-        sikkerlogg.error("Forstod ikke behov:\n${problems.toExtendedReport()}")
+        sikkerlogg.error("Forstod ikke komplett løsning:\n${problems.toExtendedReport()}")
     }
 
     private companion object {
