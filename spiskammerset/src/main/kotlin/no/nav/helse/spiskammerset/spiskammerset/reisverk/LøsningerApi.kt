@@ -34,15 +34,23 @@ internal fun Route.lagreLøsningerApi(dataSource: DataSource, oppbevaringsbokser
             val etiketter = skalLagres.map { it.oppbevaringsboks.etikett }
             check(etiketter.size == etiketter.toSet().size) { "Meldingen inneholder flere løsninger som hører til samme oppvbevaringsboks! Dette skal ikke skje" }
 
-            val lagredeLøsningIder = dataSource.connection {
-                transaction {
-                    skalLagres.associate { (behovsnavn, oppbevaringsboks, løsning) ->
-                        behovsnavn to LagringId(oppbevaringsboks.etikett, oppbevaringsboks.puttI(løsning, this)).toString()
+            class FinnesAllerede : RuntimeException()
+            try {
+                val lagredeLøsningIder = dataSource.connection {
+                    transaction {
+                        if (håndtertTidligere(hendelse)) {
+                            throw FinnesAllerede()
+                        }
+                        lagreHendelse(hendelse)
+                        skalLagres.associate { (behovsnavn, oppbevaringsboks, løsning) ->
+                            behovsnavn to LagringId(oppbevaringsboks.etikett, oppbevaringsboks.puttI(løsning, this)).toString()
+                        }
                     }
                 }
+                call.respond(HttpStatusCode.Created, mapOf("lagringIder" to lagredeLøsningIder))
+            } catch (_: FinnesAllerede) {
+                call.respond(HttpStatusCode.OK)
             }
-
-            call.respond(HttpStatusCode.Created, mapOf("lagringIder" to lagredeLøsningIder))
         }
     }
 }

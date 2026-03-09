@@ -20,7 +20,7 @@ internal class LøsningerApiTest : RestApiTest(oppbevaringsbokser = listOf(
             {
               "@event_name": "behov",
               "@behov": ["TøyseteBehov1"],
-              "@id": "12345",
+              "@id": "00000000-0000-0000-0000-00000000000A",
               "@opprettet": "2024-06-01T12:00:00",
               "fødselsnummer": "01010112345",
               "@final": true,
@@ -66,7 +66,7 @@ internal class LøsningerApiTest : RestApiTest(oppbevaringsbokser = listOf(
             {
               "@event_name": "behov",
               "@behov": ["TøyseteBehov1", "TøyseteBehov2", "TøyseteBehov3"],
-              "@id": "12345",
+              "@id": "00000000-0000-0000-0000-00000000000A",
               "@opprettet": "2024-06-01T12:00:00",
               "fødselsnummer": "01010112345",
               "@final": true,
@@ -91,7 +91,7 @@ internal class LøsningerApiTest : RestApiTest(oppbevaringsbokser = listOf(
         lagreLøsninger(
             jsonBody = innkommendeMelding,
             assertResponse = { status, responseBody ->
-                assertEquals(HttpStatusCode.OK, status)
+                assertEquals(HttpStatusCode.Created, status)
                 @Language("JSON")
                 val forventetResponse =
                     """
@@ -156,6 +156,7 @@ internal class LøsningerApiTest : RestApiTest(oppbevaringsbokser = listOf(
         {
           "@event_name": "behov",
           "@behov": ["Faktating", "FaktatingV2"],
+          "@id": "00000000-0000-0000-0000-00000000000A",
           "fødselsnummer": "01010112345",
           "@final": true,
           "@lagreLøsninger": true,
@@ -188,6 +189,7 @@ internal class LøsningerApiTest : RestApiTest(oppbevaringsbokser = listOf(
             {
               "@event_name": "behov",
               "@behov": ["Faktating", "FaktatingV2"],
+              "@id": "00000000-0000-0000-0000-00000000000A",
               "fødselsnummer": "01010112345",
               "@final": true,
               "@lagreLøsninger": true,
@@ -209,7 +211,7 @@ internal class LøsningerApiTest : RestApiTest(oppbevaringsbokser = listOf(
         lagreLøsninger(
             jsonBody = innkommendeMelding,
             assertResponse = { status, responseBody ->
-                assertEquals(HttpStatusCode.OK, status)
+                assertEquals(HttpStatusCode.Created, status)
                 @Language("JSON")
                 val forventetResponse =
                     """
