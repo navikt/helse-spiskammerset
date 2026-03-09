@@ -3,7 +3,6 @@ package no.nav.helse.spiskammerset.mottak
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
-import java.net.URI
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
@@ -12,6 +11,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.skyscreamer.jsonassert.JSONAssert
+import java.net.URI
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class LøsningContentEnricherRiverTest {
@@ -20,8 +20,8 @@ internal class LøsningContentEnricherRiverTest {
     private val sisteSendtMelding get() = rapid.inspektør.message(rapid.inspektør.size.minus(1))
 
     private val testSpiskammersetKlient = object : SpiskammersetKlient {
-        override fun lagreLøsninger(packet: JsonMessage): Map<String, URI> {
-            return mapOf("SelvstendigForsikring" to URI("urn:grunnlagsdata:forsikring:00000000-0000-0000-0000-000000000000"))
+        override fun lagreLøsninger(packet: JsonMessage): Lagringsresultat {
+            return Lagringsresultat.LagretNå(mapOf("SelvstendigForsikring" to URI("urn:grunnlagsdata:forsikring:00000000-0000-0000-0000-000000000000")))
         }
     }
 

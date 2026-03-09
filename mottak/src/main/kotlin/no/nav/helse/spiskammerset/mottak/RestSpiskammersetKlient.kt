@@ -13,8 +13,13 @@ import java.net.http.HttpResponse
 import java.time.Duration
 import java.util.*
 
+sealed interface Lagringsresultat {
+    data object LagretTidligere : Lagringsresultat
+    data class LagretNå(val lagringIder: Map<String, URI>) : Lagringsresultat
+}
+
 interface SpiskammersetKlient {
-    fun lagreLøsninger(packet: JsonMessage): Map<String, URI>
+    fun lagreLøsninger(packet: JsonMessage): Lagringsresultat
 }
 
 internal class RestSpiskammersetKlient(
@@ -30,25 +35,29 @@ internal class RestSpiskammersetKlient(
             endepunkt = "hendelse",
             requestBody = packet.toJson(),
             callId = UUID.fromString(packet["@id"].asText()),
-            forventetResponseCode = 204
+            forventetResponseCodes = listOf(204)
         )
     }
 
-    override fun lagreLøsninger(packet: JsonMessage): Map<String, URI> {
-        val response = post(
+    override fun lagreLøsninger(packet: JsonMessage): Lagringsresultat {
+        val (responseBody, responseCode) = post(
             endepunkt = "lagre-losninger",
             requestBody = packet.toJson(),
             callId = UUID.fromString(packet["@id"].asText()),
-            forventetResponseCode = 200
+            forventetResponseCodes = listOf(200, 201)
         )
 
-        val lagredeLøsningIder = response.path("lagredeLøsningIder") as ObjectNode
-        return lagredeLøsningIder.properties().associate { (behovsnavn, urn) ->
+        if (responseCode == 200) return Lagringsresultat.LagretTidligere
+
+        val lagredeLøsningIder = responseBody.path("lagringIder") as ObjectNode
+        return Lagringsresultat.LagretNå(lagredeLøsningIder.properties().associate { (behovsnavn, urn) ->
             behovsnavn to URI(urn.asText())
-        }
+        })
     }
 
-    private fun post(endepunkt: String, requestBody: String, callId: UUID, forventetResponseCode: Int): JsonNode {
+    private data class Response(val responseBody: JsonNode, val responseCode: Int)
+
+    private fun post(endepunkt: String, requestBody: String, callId: UUID, forventetResponseCodes: List<Int>): Response {
         val accessToken = azureTokenProvider.bearerToken(scope).getOrThrow()
         val request = HttpRequest
             .newBuilder()
@@ -61,10 +70,10 @@ internal class RestSpiskammersetKlient(
             .header("callId", "$callId")
             .build()
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-        check(response.statusCode() == forventetResponseCode) {
-            "Feil fra Spiskammers-API. Forventet HTTP $forventetResponseCode, men fikk ${response.statusCode()}"
+        check(response.statusCode() in forventetResponseCodes) {
+            "Feil fra Spiskammers-API. Forventet HTTP $forventetResponseCodes, men fikk ${response.statusCode()}"
         }
-        return objectmapper.readTree(response.body())
+        return Response(objectmapper.readTree(response.body()), response.statusCode())
     }
 
     private companion object {

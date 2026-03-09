@@ -34,20 +34,25 @@ internal class LøsningContentEnricherRiver(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         sikkerlogg.info("Mottok opplysninger om behov:\n\t${packet.toJson()}")
-        val lagringIder = lagreLøsninger(packet)
-        val løsningMedLagringIder = jacksonObjectMapper().createObjectNode()
-        packet["@løsning"].properties().forEach { (behovsnavn, løsning) ->
-            val lagringId = lagringIder[behovsnavn]
-            if (lagringId == null) {
-                løsningMedLagringIder.set<JsonNode>(behovsnavn, løsning)
-            } else {
-                val løsningMedLagringId = (løsning as ObjectNode).put("lagringId", lagringId.toString())
-                løsningMedLagringIder.set(behovsnavn, løsningMedLagringId)
+        when (val lagringsresultat = lagreLøsninger(packet)) {
+            Lagringsresultat.LagretTidligere -> sikkerlogg.info("Ignorerer melding. Håndtert den tidligere")
+            is Lagringsresultat.LagretNå -> {
+
+                val løsningMedLagringIder = jacksonObjectMapper().createObjectNode()
+                packet["@løsning"].properties().forEach { (behovsnavn, løsning) ->
+                    val lagringId = lagringsresultat.lagringIder[behovsnavn]
+                    if (lagringId == null) {
+                        løsningMedLagringIder.set<JsonNode>(behovsnavn, løsning)
+                    } else {
+                        val løsningMedLagringId = (løsning as ObjectNode).put("lagringId", lagringId.toString())
+                        løsningMedLagringIder.set(behovsnavn, løsningMedLagringId)
+                    }
+                }
+                packet["@løsning"] = løsningMedLagringIder
+                packet["@lagret"] = true
+                context.publish(packet.toJson())
             }
         }
-        packet["@løsning"] = løsningMedLagringIder
-        packet["@lagret"] = true
-        context.publish(packet.toJson())
     }
 
     private fun lagreLøsninger(packet: JsonMessage) = try {
