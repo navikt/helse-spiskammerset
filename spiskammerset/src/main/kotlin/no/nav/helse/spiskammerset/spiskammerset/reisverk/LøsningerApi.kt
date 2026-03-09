@@ -15,6 +15,11 @@ internal fun Route.lagreLøsningerApi(dataSource: DataSource, oppbevaringsbokser
     post("/lagre-losninger") {
         håndterRequest {
             val komplettLøsning = call.json()
+            val hendelse = Hendelse(
+                hendelseId = HendelseId(UUID.fromString(komplettLøsning.path("@id").asText())),
+                hendelsetype = komplettLøsning.path("@event_name").asText(),
+                json = komplettLøsning
+            )
 
             val skalLagres = komplettLøsning["@løsning"]
                 .properties()
@@ -37,7 +42,7 @@ internal fun Route.lagreLøsningerApi(dataSource: DataSource, oppbevaringsbokser
                 }
             }
 
-            call.respond(HttpStatusCode.OK, mapOf("lagringIder" to lagredeLøsningIder))
+            call.respond(HttpStatusCode.Created, mapOf("lagringIder" to lagredeLøsningIder))
         }
     }
 }

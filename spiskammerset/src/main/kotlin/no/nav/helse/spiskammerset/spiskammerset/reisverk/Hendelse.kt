@@ -1,6 +1,5 @@
 package no.nav.helse.spiskammerset.spiskammerset.reisverk
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import java.time.Instant
 import java.time.LocalDate
@@ -68,46 +67,5 @@ sealed interface Behandling {
 data class Hendelse(
     val hendelseId: HendelseId,
     val hendelsetype: String,
-    val behandlinger: List<Behandling>,
     val json: ObjectNode
-) {
-    companion object {
-        fun opprett(json: ObjectNode): Hendelse {
-            return Hendelse(
-                hendelseId = HendelseId(UUID.fromString(json["@id"].asText())),
-                hendelsetype = json["@event_name"].asText(),
-                json = json,
-                behandlinger = when (json.hasNonNull("behandlinger")) {
-                    true -> json.path("behandlinger").map { behandling(it) }
-                    false -> listOf(behandling(json))
-                }
-            )
-        }
-
-        private fun behandlingOpprettetTidspunkt(json: JsonNode): Instant {
-            if (json.hasNonNull("behandlingOpprettetTidspunkt")) return Instant.parse(json["behandlingOpprettetTidspunkt"].asText())
-            check(json["@event_name"].asText() == "behandling_opprettet") { "Dette må vi huske på når vi migrerer inn behandlinger. Da kan vi ikke bruke @opprettet, det blir bare tull og tøys" }
-            return Instant.parse(json["@opprettetUTC"].asText())
-        }
-
-        private fun behandling(json: JsonNode): Behandling {
-            // TODO: Mangler mapping om det bare er en "MinimalBehandling"
-            val yrkesaktivitetstype = Yrkesaktivitetstype(json["yrkesaktivitetstype"].asText())
-            return Behandling.KomplettBehandling(
-                personidentifikator = Personidentifikator(json["fødselsnummer"].asText()),
-                vedtaksperiodeId = VedtaksperiodeId(UUID.fromString(json["vedtaksperiodeId"].asText())),
-                behandlingId = BehandlingId(UUID.fromString(json["behandlingId"].asText())),
-                periode = Periode(
-                    fom = LocalDate.parse(json["fom"].asText()),
-                    tom = LocalDate.parse(json["tom"].asText())
-                ),
-                yrkesaktivitetstype = yrkesaktivitetstype,
-                organisasjonsnummer = when (yrkesaktivitetstype.erArbeidstaker) {
-                    true -> Organisasjonsnummer(json["organisasjonsnummer"].asText())
-                    false -> null
-                },
-                opprettet = behandlingOpprettetTidspunkt(json)
-            )
-        }
-    }
-}
+)

@@ -13,6 +13,52 @@ internal class LøsningerApiTest : RestApiTest(oppbevaringsbokser = listOf(
 )) {
 
     @Test
+    fun `Håndterer bare én melding én gang`() = restApiTest {
+        @Language("JSON")
+        val innkommendeMelding =
+            """
+            {
+              "@event_name": "behov",
+              "@behov": ["TøyseteBehov1"],
+              "@id": "12345",
+              "@opprettet": "2024-06-01T12:00:00",
+              "fødselsnummer": "01010112345",
+              "@final": true,
+              "@lagreLøsninger": true,
+              "@løsning": {
+                "TøyseteBehov1": {
+                  "innhold": "Kult innhold"
+                  }
+              }
+            }
+            """
+
+        lagreLøsninger(
+            jsonBody = innkommendeMelding,
+            assertResponse = { status, responseBody ->
+                assertEquals(HttpStatusCode.Created, status)
+                @Language("JSON")
+                val forventetResponse =
+                    """
+                    {
+                      "lagringIder": {
+                        "TøyseteBehov1": "urn:grunnlagsdata:tøysete-etikett-1:00000000-0000-0000-0000-000000000001"
+                      }
+                    }
+                    """
+                assertJsonEquals(forventetResponse, responseBody)
+            }
+        )
+
+        lagreLøsninger(
+            jsonBody = innkommendeMelding,
+            assertResponse = { status, responseBody ->
+                assertEquals(HttpStatusCode.OK, status)
+            }
+        )
+    }
+
+    @Test
     fun `Lagrer løsninger på behov som det er snekret oppbevaringsbokser for`() = restApiTest {
         @Language("JSON")
         val innkommendeMelding =
