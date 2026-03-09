@@ -8,6 +8,7 @@ val postgresqlVersion: String by project
 val jsonAssertVersion: String by project
 
 dependencies {
+    implementation(project(":migreringer"))
     implementation(project(":oppbevaringsboks"))
     implementation(project(":forsikring"))
 

@@ -17,13 +17,5 @@ dependencies {
 
     testImplementation("com.github.navikt.tbd-libs:rapids-and-rivers-test:$tbdLibsVersion")
     testImplementation("com.github.navikt.tbd-libs:mock-http-client:$tbdLibsVersion")
-    testImplementation(project(":spiskammerset")) // TODO burde putte migreringene et annet sted så vi slipper å dra inn hele spiskammerset for det her
-
-}
-
-tasks.named("test") {
-    val spiskammersetCopyDeps = project(":spiskammerset").tasks.findByName("copyDeps")
-    if (spiskammersetCopyDeps != null) {
-        mustRunAfter(spiskammersetCopyDeps)
-    }
+    testImplementation(project(":migreringer"))
 }
