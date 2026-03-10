@@ -19,7 +19,7 @@ internal class LøsningContentEnricherRiver(
                 it.requireValue("@event_name", "behov")
                 it.requireValue("@final", true) // Skal bare bry seg om komplette løsninger
                 it.requireValue("@lagreLøsninger", true) // Spleis setter for å si at det er interessant for Spiskammerset, for at vi ikke blander med andre behov
-                it.forbidValue("@lagret", true) // Trenger ikke lytte på event Spiskammerset sender ut
+                it.forbid("@lagringIder") // Trenger ikke lytte på events Spiskammerset selv sender ut
             }
             validate {
                 it.requireKey("@id", "fødselsnummer", "@løsning")
@@ -38,7 +38,6 @@ internal class LøsningContentEnricherRiver(
                 is Lagringsresultat.LagretNå -> {
 
                     packet["@lagringIder"] = lagringsresultat.lagringIder
-                    packet["@lagret"] = true // TODO: Fjern
                     val enriched = packet.toJson()
 
                     when (lagringsresultat.lagringIder.isEmpty()) {

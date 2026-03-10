@@ -80,7 +80,6 @@ internal class LøsningContentEnricherRiverTest {
                 "fødselsnummer": "01010112345",
                 "@final": true,
                 "@lagreLøsninger": true,
-                "@lagret": true,
                 "@løsning": {
                   "SelvstendigForsikring": [{
                     "forsikringstype": "ÅttiProsentFraDagEn",
