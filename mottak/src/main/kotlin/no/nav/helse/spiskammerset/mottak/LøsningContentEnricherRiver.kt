@@ -34,37 +34,35 @@ internal class LøsningContentEnricherRiver(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         sikkerlogg.info("Mottok komplett løsning på behov:\n\t${packet.toJson()}")
-        when (val lagringsresultat = lagreLøsninger(packet)) {
-            Lagringsresultat.LagretTidligere -> sikkerlogg.info("Ignorerer melding. Håndtert den tidligere")
-            is Lagringsresultat.LagretNå -> {
 
-                val løsningMedLagringIder = jacksonObjectMapper().createObjectNode()
-                packet["@løsning"].properties().forEach { (behovsnavn, løsning) ->
-                    val lagringId = lagringsresultat.lagringIder[behovsnavn]
-                    if (lagringId == null) {
-                        løsningMedLagringIder.set<JsonNode>(behovsnavn, løsning)
-                    } else {
-                        val løsningMedLagringId = (løsning as ObjectNode).put("lagringId", lagringId.toString())
-                        løsningMedLagringIder.set(behovsnavn, løsningMedLagringId)
+        try {
+            when (val lagringsresultat = spiskammersetKlient.lagreLøsninger(packet)) {
+                Lagringsresultat.LagretTidligere -> sikkerlogg.info("Ignorerer melding. Håndtert den tidligere")
+                is Lagringsresultat.LagretNå -> {
+                    val løsningMedLagringIder = jacksonObjectMapper().createObjectNode()
+                    packet["@løsning"].properties().forEach { (behovsnavn, løsning) ->
+                        val lagringId = lagringsresultat.lagringIder[behovsnavn]
+                        if (lagringId == null) {
+                            løsningMedLagringIder.set<JsonNode>(behovsnavn, løsning)
+                        } else {
+                            val løsningMedLagringId = (løsning as ObjectNode).put("lagringId", lagringId.toString())
+                            løsningMedLagringIder.set(behovsnavn, løsningMedLagringId)
+                        }
                     }
+                    packet["@løsning"] = løsningMedLagringIder
+                    packet["@lagret"] = true
+                    val enriched = packet.toJson()
+
+                    if (lagringsresultat.lagringIder.size == 0) sikkerlogg.info("Republiserer komplett løsning på behov uten å lagre ned noen løsninger:\n\t${enriched}")
+                    else sikkerlogg.info("Republiserer komplett løsning på behov hvor ${lagringsresultat.lagringIder.size} løsninger har blitt lagret ned (${lagringsresultat.lagringIder.keys.joinToString()}):\n\t${enriched}")
+
+                    context.publish(enriched)
                 }
-                packet["@løsning"] = løsningMedLagringIder
-                packet["@lagret"] = true
-                val enriched = packet.toJson()
-
-                if (lagringsresultat.lagringIder.size == 0) sikkerlogg.info("Republiserer komplett løsning på behov uten å lagre ned noen løsninger:\n\t${enriched}")
-                else sikkerlogg.info("Republiserer komplett løsning på behov hvor ${lagringsresultat.lagringIder.size} løsninger har blitt lagret ned (${lagringsresultat.lagringIder.keys.joinToString()}):\n\t${enriched}")
-
-                context.publish(enriched)
             }
+        } catch (error: Exception) {
+            sikkerlogg.error("Feil ved håndtering av komplett løsning", error)
+            throw error
         }
-    }
-
-    private fun lagreLøsninger(packet: JsonMessage) = try {
-        spiskammersetKlient.lagreLøsninger(packet)
-    } catch (error: Exception) {
-        sikkerlogg.error("Feil ved håndtering av komplett løsning", error)
-        throw error
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
