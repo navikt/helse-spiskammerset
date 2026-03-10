@@ -51,11 +51,11 @@ internal class LøsningContentEnricherRiverTest {
                 "@final": true,
                 "@lagreLøsninger": true,
                 "@løsning": {
-                  "SelvstendigForsikring": {
+                  "SelvstendigForsikring": [{
                     "forsikringstype": "ÅttiProsentFraDagEn",
                     "startdato": "2024-01-01",
                     "sluttdato": "2024-12-31"
-                  },
+                  }],
                   "Medlemskap": {
                     "medlem": "VET IKKE"
                   },
@@ -82,12 +82,11 @@ internal class LøsningContentEnricherRiverTest {
                 "@lagreLøsninger": true,
                 "@lagret": true,
                 "@løsning": {
-                  "SelvstendigForsikring": {
+                  "SelvstendigForsikring": [{
                     "forsikringstype": "ÅttiProsentFraDagEn",
                     "startdato": "2024-01-01",
-                    "sluttdato": "2024-12-31",
-                    "lagringId" : "urn:grunnlagsdata:forsikring:00000000-0000-0000-0000-000000000000"
-                  },
+                    "sluttdato": "2024-12-31"
+                  }],
                   "Medlemskap": {
                     "medlem": "VET IKKE"
                   },
@@ -97,6 +96,9 @@ internal class LøsningContentEnricherRiverTest {
                   "Arbeidsforhold": {
                     "arbeidsforhold": [1]
                   }
+                },
+                "@lagringIder": {
+                  "SelvstendigForsikring": "urn:grunnlagsdata:forsikring:00000000-0000-0000-0000-000000000000"
                 }
             }
             """

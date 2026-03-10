@@ -1,8 +1,5 @@
 package no.nav.helse.spiskammerset.mottak
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
@@ -39,22 +36,15 @@ internal class LøsningContentEnricherRiver(
             when (val lagringsresultat = spiskammersetKlient.lagreLøsninger(packet)) {
                 Lagringsresultat.LagretTidligere -> sikkerlogg.info("Ignorerer melding. Håndtert den tidligere")
                 is Lagringsresultat.LagretNå -> {
-                    val løsningMedLagringIder = jacksonObjectMapper().createObjectNode()
-                    packet["@løsning"].properties().forEach { (behovsnavn, løsning) ->
-                        val lagringId = lagringsresultat.lagringIder[behovsnavn]
-                        if (lagringId == null) {
-                            løsningMedLagringIder.set<JsonNode>(behovsnavn, løsning)
-                        } else {
-                            val løsningMedLagringId = (løsning as ObjectNode).put("lagringId", lagringId.toString())
-                            løsningMedLagringIder.set(behovsnavn, løsningMedLagringId)
-                        }
-                    }
-                    packet["@løsning"] = løsningMedLagringIder
-                    packet["@lagret"] = true
+
+                    packet["@lagringIder"] = lagringsresultat.lagringIder
+                    packet["@lagret"] = true // TODO: Fjern
                     val enriched = packet.toJson()
 
-                    if (lagringsresultat.lagringIder.size == 0) sikkerlogg.info("Republiserer komplett løsning på behov uten å lagre ned noen løsninger:\n\t${enriched}")
-                    else sikkerlogg.info("Republiserer komplett løsning på behov hvor ${lagringsresultat.lagringIder.size} løsninger har blitt lagret ned (${lagringsresultat.lagringIder.keys.joinToString()}):\n\t${enriched}")
+                    when (lagringsresultat.lagringIder.isEmpty()) {
+                        true -> sikkerlogg.info("Republiserer komplett løsning på behov uten å lagre ned noen løsninger:\n\t${enriched}")
+                        false -> sikkerlogg.info("Republiserer komplett løsning på behov hvor ${lagringsresultat.lagringIder.size} løsninger har blitt lagret ned (${lagringsresultat.lagringIder.keys.joinToString()}):\n\t${enriched}")
+                    }
 
                     context.publish(enriched)
                 }
