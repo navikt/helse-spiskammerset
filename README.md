@@ -1,25 +1,22 @@
-spiskammers
-============
+# Spiskammerset
 
-Dette er en sprø app som har dratt "snapsotet" ut av spleis, men ikke ut av spleiselaget!
-Den skal holde på grunnlagsdate for alt spleis trenger til beregninger, vurderinger og tanker.
+Spiskammerset holder på grunnlagsdata for alt spleis trenger til beregninger, vurderinger og tanker.
 
 Andre kan være interessert i noe av denne dataen, og da er det lett å leite rundt på spiskammerset og finne frem akkurat det de er interessert i.
 
 
-# Henvendelser
-Spørsmål knyttet til koden eller prosjektet kan stilles som issues her på GitHub.
+## Database
+Databasen heter spiskammerset, så for å få kontakt med databasen må man skrive
 
-## For NAV-ansatte
-Interne henvendelser kan sendes via Slack i kanalen #team-sas-værsågod.
-
-# Database
-Databasen heter spiskammers, men spiskammers-api eier databasen 🤯, så for å få kontakt med databasen må man skrive
-
-`nais postgres grant spiskammers-api`
+`nais postgres grant spiskammerset`
 
 og
 
-`nais postgres proxy spiskammers-api` 
+`nais postgres proxy spiskammerset`
 
-💪🏼
+
+## Henvendelser
+Spørsmål knyttet til koden eller prosjektet kan stilles som issues her på GitHub.
+
+### For NAV-ansatte
+Interne henvendelser kan sendes via Slack i kanalen #team-sas-værsågod.
