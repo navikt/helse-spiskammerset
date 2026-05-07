@@ -49,20 +49,29 @@ internal class LøsningContentEnricherRiverTest {
                 "@final": true,
                 "@lagreLøsninger": true,
                 "@løsning": {
-                  "SelvstendigForsikring": [{
-                    "forsikringstype": "ÅttiProsentFraDagEn",
-                    "startdato": "2024-01-01",
-                    "sluttdato": "2024-12-31"
-                  }],
-                  "Medlemskap": {
-                    "medlem": "VET IKKE"
-                  },
-                  "InntekterForOpptjening": {
-                    "inntekter": [20000]
-                  },
-                  "Arbeidsforhold": {
-                    "arbeidsforhold": [1]
-                  }
+                    "SelvstendigForsikring": {
+                      "fakta": [
+                        {
+                          "forsikringstype": "ÅttiProsentFraDagEn",
+                          "startdato": "2024-01-01",
+                          "sluttdato": "2024-12-31"
+                        },
+                        {
+                          "forsikringstype": "HundreProsentFraDagEn",
+                          "startdato": "2024-01-02",
+                          "sluttdato": "2024-12-31"
+                        }
+                      ]
+                    },
+                    "Medlemskap": {
+                      "medlem": "VET IKKE"
+                    },
+                    "InntekterForOpptjening": {
+                      "inntekter": [20000]
+                    },
+                    "Arbeidsforhold": {
+                      "arbeidsforhold": [1]
+                    }
                 }
             }
             """
@@ -78,24 +87,34 @@ internal class LøsningContentEnricherRiverTest {
                 "fødselsnummer": "01010112345",
                 "@final": true,
                 "@lagreLøsninger": true,
+                "@lagret": true,
                 "@løsning": {
-                  "SelvstendigForsikring": [{
-                    "forsikringstype": "ÅttiProsentFraDagEn",
-                    "startdato": "2024-01-01",
-                    "sluttdato": "2024-12-31"
-                  }],
-                  "Medlemskap": {
-                    "medlem": "VET IKKE"
-                  },
-                  "InntekterForOpptjening": {
-                    "inntekter": [20000]
-                  },
-                  "Arbeidsforhold": {
-                    "arbeidsforhold": [1]
-                  }
-                },
-                "@lagringIder": {
-                  "SelvstendigForsikring": "urn:grunnlagsdata:forsikring:00000000-0000-0000-0000-000000000000"
+                    "SelvstendigForsikring": {
+                      "@faktaId": "urn:grunnlagsdata:forsikring:00000000-0000-0000-0000-000000000000",
+                      "fakta": [
+                        {
+                          "@faktumIndex": 1,
+                          "forsikringstype": "ÅttiProsentFraDagEn",
+                          "startdato": "2024-01-01",
+                          "sluttdato": "2024-12-31"
+                        },
+                        {
+                          "@faktumIndex": 2,
+                          "forsikringstype": "HundreProsentFraDagEn",
+                          "startdato": "2024-01-02",
+                          "sluttdato": "2024-12-31"
+                        }
+                      ]
+                    },
+                    "Medlemskap": {
+                      "medlem": "VET IKKE"
+                    },
+                    "InntekterForOpptjening": {
+                      "inntekter": [20000]
+                    },
+                    "Arbeidsforhold": {
+                      "arbeidsforhold": [1]
+                    }
                 }
             }
             """

@@ -19,12 +19,11 @@ internal class LøsningContentEnricherRiver(
                 it.requireValue("@event_name", "behov")
                 it.requireValue("@final", true) // Skal bare bry seg om komplette løsninger
                 it.requireValue("@lagreLøsninger", true) // Spleis setter for å si at det er interessant for Spiskammerset, for at vi ikke blander med andre behov
-                it.forbid("@lagringIder") // Trenger ikke lytte på events Spiskammerset selv sender ut
+                it.forbid("@lagret") // Trenger ikke lytte på events Spiskammerset selv sender ut
             }
             validate {
                 it.requireKey("@id", "fødselsnummer", "@løsning")
                 it.interestedIn("beregningId", "behandlingId", "vedtaksperiodeId")
-                // TODO noe med samlingVurderteVilkårId? SkjæringstidspunktavgjørelserId? SkjæringstidspunktAvgjørelserId??
             }
         }.register(this)
     }
@@ -33,12 +32,14 @@ internal class LøsningContentEnricherRiver(
         sikkerlogg.info("Mottok komplett løsning på behov:\n\t${packet.toJson()}")
 
         try {
-            when (val lagringsresultat = spiskammersetKlient.lagreLøsninger(packet)) {
+            val medFaktumIndexer = packet.medFaktumIndexer()
+            when (val lagringsresultat = spiskammersetKlient.lagreLøsninger(medFaktumIndexer)) {
                 Lagringsresultat.LagretTidligere -> sikkerlogg.info("Ignorerer melding. Håndtert den tidligere")
                 is Lagringsresultat.LagretNå -> {
 
-                    packet["@lagringIder"] = lagringsresultat.lagringIder
-                    val enriched = packet.toJson()
+                    val medFaktaIder = medFaktumIndexer.medFaktaIder(lagringsresultat.lagringIder)
+                    medFaktaIder["@lagret"] = true
+                    val enriched = medFaktaIder.toJson()
 
                     when (lagringsresultat.lagringIder.isEmpty()) {
                         true -> sikkerlogg.info("Republiserer komplett løsning på behov uten å lagre ned noen løsninger:\n\t${enriched}")
@@ -55,7 +56,7 @@ internal class LøsningContentEnricherRiver(
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
-        sikkerlogg.error("Forstod ikke komplett løsning:\n${problems.toExtendedReport()}")
+        sikkerlogg.error("Forstod ikke komplett løsning på behov:\n${problems.toExtendedReport()}")
     }
 
     private companion object {

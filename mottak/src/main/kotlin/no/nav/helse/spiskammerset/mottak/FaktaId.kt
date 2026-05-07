@@ -34,7 +34,7 @@ private fun JsonNode.fjernFaktumIndexer() {
 internal fun JsonMessage.medFaktaIder(lagringIder: Map<String, URI>): JsonMessage {
     this["@løsning"].properties().forEach { (behovsnavn, løsning) ->
         val lagringId = lagringIder[behovsnavn] ?: return@forEach løsning.fjernFaktumIndexer()
-        løsning as ObjectNode
+        check(løsning is ObjectNode) { "Støtter bare å lagre løsninger som er JSON-objekter, var ${løsning::class.simpleName}" }
         løsning.put("@faktaId", lagringId.toString())
     }
     return this
