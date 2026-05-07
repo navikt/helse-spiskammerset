@@ -1,6 +1,5 @@
 package no.nav.helse.spiskammerset.mottak
 
-import com.fasterxml.jackson.databind.node.ObjectNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import org.intellij.lang.annotations.Language
@@ -10,7 +9,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
-import org.skyscreamer.jsonassert.JSONAssert
 import java.net.URI
 
 @TestInstance(Lifecycle.PER_CLASS)
@@ -103,9 +101,6 @@ internal class LøsningContentEnricherRiverTest {
             """
 
         assertEquals(1, rapid.inspektør.size)
-        val sisteSendteMelding = sisteSendtMelding as ObjectNode
-        val meldingUtenRapidsAndRiversFelter = sisteSendteMelding.remove(setOf("@opprettet", "@id", "@forårsaket_av", "system_participating_services", "system_read_count"))
-
-        JSONAssert.assertEquals(forventetUtgåendeMelding, meldingUtenRapidsAndRiversFelter.toString(), true)
+        assertJsonMessage(forventetUtgåendeMelding, sisteSendtMelding)
     }
 }
