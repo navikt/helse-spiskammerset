@@ -11,7 +11,9 @@ on:
       - 'settings.gradle.kts'
       - '.nais/opprydding-dev.yml'
       - '.nais/dev-db-policy.yml'
-
+  schedule:
+    - cron: '0 3 * * 3'
+      timezone: 'Europe/Oslo'
 jobs:
   build:
     name: build

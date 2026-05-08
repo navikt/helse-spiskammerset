@@ -12,7 +12,9 @@ on:
       - 'mottak.yml'
       - '.nais/mottak.yml'
       - '.nais/mottak-dev.json'
-
+  schedule:
+    - cron: '0 3 * * 3'
+      timezone: 'Europe/Oslo'
 jobs:
   build:
     name: build

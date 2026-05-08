@@ -12,7 +12,9 @@ on:
       - 'spiskammerset.yml'
       - '.nais/spiskammerset.yml'
       - '.nais/spiskammerset-dev.json'
-
+  schedule:
+    - cron: '0 3 * * 3'
+      timezone: 'Europe/Oslo'
 jobs:
   build:
     name: build
