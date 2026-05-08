@@ -67,11 +67,11 @@ class SlettPersonRiverTest {
         )
 
         // Then:
-        assertEquals(0L, tellMeldinger(fødselsnummer), "Alle meldinger for person skal være slettet")
-        assertEquals(0L, tellGrunnlagsdata(fødselsnummer), "All grunnlagsdata for person skal være slettet")
+        assertEquals(0L, countMeldinger(fødselsnummer), "Alle meldinger for person skal være slettet")
+        assertEquals(0L, countGrunnlagsdata(fødselsnummer), "All grunnlagsdata for person skal være slettet")
 
-        assertEquals(1L, tellMeldinger(annenPersonsFødselsnummer), "Data for andre personer skal ikke berøres")
-        assertEquals(1L, tellGrunnlagsdata(annenPersonsFødselsnummer), "Data for andre personer skal ikke berøres")
+        assertEquals(1L, countMeldinger(annenPersonsFødselsnummer), "Data for andre personer skal ikke berøres")
+        assertEquals(1L, countGrunnlagsdata(annenPersonsFødselsnummer), "Data for andre personer skal ikke berøres")
     }
 
     private fun insertMeldingOgGrunnlagsdata(fødselsnummer: String) {
@@ -91,7 +91,7 @@ class SlettPersonRiverTest {
         }
     }
 
-    private fun tellMeldinger(fødselsnummer: String): Long =
+    private fun countMeldinger(fødselsnummer: String): Long =
         dataSource.connection.use { conn ->
             conn.prepareStatement(
                 "SELECT COUNT(*) FROM melding WHERE data->>'fødselsnummer' = ?"
@@ -101,7 +101,7 @@ class SlettPersonRiverTest {
             }
         }
 
-    private fun tellGrunnlagsdata(fødselsnummer: String): Long =
+    private fun countGrunnlagsdata(fødselsnummer: String): Long =
         dataSource.connection.use { conn ->
             conn.prepareStatement(
                 "SELECT COUNT(*)" +

@@ -25,7 +25,14 @@ internal class SlettPersonRiver(
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         val personidentifikator = packet["fødselsnummer"].asText()
 
-        // TODO Må slette noe greier
+        dataSource.connection.use { conn ->
+            conn.prepareStatement(
+                "DELETE FROM melding WHERE data->>'fødselsnummer' = ?"
+            ).use { stmt ->
+                stmt.setString(1, personidentifikator)
+                stmt.execute()
+            }
+        }
 
         context.publish(personidentifikator, lagPersonSlettet(personidentifikator))
     }

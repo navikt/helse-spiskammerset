@@ -4,5 +4,5 @@ CREATE TABLE grunnlagsdata
     lagret_tidspunkt TIMESTAMPTZ NOT NULL             DEFAULT now(),
     data             JSONB       NOT NULL,
     type             TEXT        NOT NULL,
-    melding_ref      UUID        NOT NULL REFERENCES melding (id)
+    melding_ref      UUID        NOT NULL REFERENCES melding (id) ON DELETE CASCADE
 );
