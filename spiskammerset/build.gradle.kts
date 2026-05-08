@@ -1,33 +1,48 @@
-val tbdLibsVersion: String by project
-val logbackClassicVersion = "1.5.25"
-val logbackEncoderVersion = "8.0"
-val ktorVersion = "3.2.3" // bør være samme som i <com.github.navikt.tbd-libs:naisful-app>
-val flywayCoreVersion = "11.5.0"
-val hikariCPVersion: String by project
-val postgresqlVersion: String by project
-val jsonAssertVersion: String by project
+plugins {
+    alias(libs.plugins.kotlin.jvm)
+    id("application")
+}
+
+application {
+    mainClass.set("no.nav.helse.spiskammerset.spiskammerset.AppKt")
+    applicationName = "app"
+}
+
+kotlin {
+    jvmToolchain(21)
+}
 
 dependencies {
     implementation(project(":migreringer"))
-    implementation(project(":oppbevaringsboks"))
-    implementation(project(":forsikring"))
+    api(libs.rapids.and.rivers)
+    api(libs.tbd.libs.azure.token.client.default)
+    api(libs.logback.classic)
+    api(libs.logstash.logback.encoder)
 
-    api("ch.qos.logback:logback-classic:$logbackClassicVersion")
-    api("net.logstash.logback:logstash-logback-encoder:$logbackEncoderVersion")
-
-    api("io.ktor:ktor-server-auth:$ktorVersion")
-    api("io.ktor:ktor-server-auth-jwt:$ktorVersion") {
+    api(libs.ktor.server.auth)
+    api(libs.ktor.server.auth.jwt) {
         exclude(group = "junit")
     }
 
-    api("com.github.navikt.tbd-libs:naisful-app:${tbdLibsVersion}")
-    api("org.flywaydb:flyway-database-postgresql:${flywayCoreVersion}")
-    implementation("com.zaxxer:HikariCP:${hikariCPVersion}")
-    implementation("org.postgresql:postgresql:${postgresqlVersion}")
-    implementation("com.github.navikt.tbd-libs:sql-dsl:${tbdLibsVersion}")
+    api(libs.tbd.libs.naisful.app)
+    api(libs.flyway.database.postgresql)
+    implementation(libs.hikaricp)
+    implementation(libs.postgresql)
+    implementation(libs.tbd.libs.sql.dsl)
 
-    testImplementation("com.github.navikt.tbd-libs:postgres-testdatabaser:${tbdLibsVersion}")
-    testImplementation("com.github.navikt.tbd-libs:naisful-test-app:${tbdLibsVersion}")
-    testImplementation("com.github.navikt.tbd-libs:signed-jwt-issuer-test:${tbdLibsVersion}")
-    testImplementation("org.skyscreamer:jsonassert:${jsonAssertVersion}")
+    testImplementation(libs.junit.jupiter)
+    testRuntimeOnly(libs.junit.platform.launcher)
+    testImplementation(libs.tbd.libs.rapids.and.rivers.test)
+    testImplementation(libs.tbd.libs.mock.http.client)
+    testImplementation(libs.jsonassert)
+    testImplementation(libs.tbd.libs.postgres.testdatabaser)
+    testImplementation(libs.tbd.libs.naisful.test.app)
+    testImplementation(libs.tbd.libs.signed.jwt.issuer.test)
+}
+
+tasks.test {
+    useJUnitPlatform()
+    testLogging {
+        events("skipped", "failed")
+    }
 }

@@ -1,21 +1,38 @@
-private val cloudSqlVersion = "1.28.1"
-val rapidsAndRiversVersion: String by project
-val tbdLibsVersion: String by project
-val hikariCPVersion: String by project
-val postgresqlVersion: String by project
+plugins {
+    alias(libs.plugins.kotlin.jvm)
+    id("application")
+}
+
+application {
+    mainClass.set("no.nav.helse.spiskammerset.opprydding_dev.AppKt")
+    applicationName = "app"
+}
+
+kotlin {
+    jvmToolchain(21)
+}
 
 dependencies {
-    api("com.github.navikt:rapids-and-rivers:$rapidsAndRiversVersion")
-    api("com.github.navikt.tbd-libs:azure-token-client-default:$tbdLibsVersion")
+    api(libs.rapids.and.rivers)
+    api(libs.tbd.libs.azure.token.client.default)
 
-    implementation("com.google.cloud.sql:postgres-socket-factory:${cloudSqlVersion}")
-    implementation("org.postgresql:postgresql:${postgresqlVersion}")
-    implementation("com.zaxxer:HikariCP:${hikariCPVersion}")
-    implementation("com.github.navikt.tbd-libs:sql-dsl:${tbdLibsVersion}")
+    implementation(libs.cloud.sql.postgres.socket.factory)
+    implementation(libs.postgresql)
+    implementation(libs.hikaricp)
+    implementation(libs.tbd.libs.sql.dsl)
 
-    testImplementation("com.github.navikt.tbd-libs:postgres-testdatabaser:${tbdLibsVersion}")
-
-    testImplementation("com.github.navikt.tbd-libs:rapids-and-rivers-test:$tbdLibsVersion")
-    testImplementation("com.github.navikt.tbd-libs:mock-http-client:$tbdLibsVersion")
+    testImplementation(libs.junit.jupiter)
+    testRuntimeOnly(libs.junit.platform.launcher)
+    testImplementation(libs.tbd.libs.postgres.testdatabaser)
+    testImplementation(libs.tbd.libs.rapids.and.rivers.test)
+    testImplementation(libs.tbd.libs.mock.http.client)
+    testImplementation(libs.flyway.database.postgresql)
     testImplementation(project(":migreringer"))
+}
+
+tasks.test {
+    useJUnitPlatform()
+    testLogging {
+        events("skipped", "failed")
+    }
 }
