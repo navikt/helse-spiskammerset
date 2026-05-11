@@ -27,6 +27,12 @@ internal class SlettPersonRiver(
 
         dataSource.connection.use { conn ->
             conn.prepareStatement(
+                "DELETE FROM grunnlagsdata WHERE melding_ref IN (SELECT id FROM melding WHERE data->>'fødselsnummer' = ?)"
+            ).use { stmt ->
+                stmt.setString(1, personidentifikator)
+                stmt.execute()
+            }
+            conn.prepareStatement(
                 "DELETE FROM melding WHERE data->>'fødselsnummer' = ?"
             ).use { stmt ->
                 stmt.setString(1, personidentifikator)
