@@ -7,7 +7,7 @@ import kotlin.uuid.Uuid
 import kotlin.uuid.toJavaUuid
 
 internal data class GrunnlagsdataDto @OptIn(ExperimentalUuidApi::class) constructor(
-    val id: UUID = Uuid.generateV7().toJavaUuid(),
+    val id: UUID,
     val lagretTidspunkt: Instant,
     val data: String,
     val type: String,

@@ -1,6 +1,7 @@
 package no.nav.helse.spiskammerset
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -16,8 +17,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertDoesNotThrow
-import org.skyscreamer.jsonassert.JSONAssert
-import org.skyscreamer.jsonassert.JSONCompareMode
 import org.testcontainers.postgresql.PostgreSQLContainer
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -61,14 +60,15 @@ class LøsningContentEnricherRiverTest {
     fun `melding og forsikring-grunnlagsdata lagres ved mottak av komplett løsning`() {
         // Given:
         val meldingId = UUID.randomUUID()
+
         val inputJson = """
             {
-                "@event_name": "behov",
-                "@behov": ["SelvstendigForsikring", "EtHeltAnnetBehov"],
                 "@id": "$meldingId",
+                "@behov": ["SelvstendigForsikring", "EtHeltAnnetBehov"],
+                "@final": true,
+                "@event_name": "behov",
                 "@opprettet": "2024-06-01T12:00:00",
                 "fødselsnummer": "01020312345",
-                "@final": true,
                 "@lagreLøsninger": true,
                 "SelvstendigForsikring": {
                     "skjæringstidspunkt": "2024-05-01"
@@ -99,7 +99,6 @@ class LøsningContentEnricherRiverTest {
                 }
             }
         """.trimIndent()
-
         // When:
         rapid.sendTestMessage(inputJson)
 
@@ -128,7 +127,7 @@ class LøsningContentEnricherRiverTest {
         // Kontroller @lagringsId på forsikring
         val selvstendingForsikringLagringsId = beriketSelvstendigForsikring.remove("@lagringsId")?.asText()
         assertNotNull(selvstendingForsikringLagringsId, "Manglet @lagringsId for SelvstendigForsikring")
-        erGyldigLagringsId(selvstendingForsikringLagringsId, "forsikring")
+        val uuid = validerGyldigLagringsIdOgGiUUID(selvstendingForsikringLagringsId, "forsikring")
 
         assertEquals(0, (beriketSelvstendigForsikring["kandidater"][0] as ObjectNode).remove("@index")?.asInt())
         assertEquals(1, (beriketSelvstendigForsikring["kandidater"][1] as ObjectNode).remove("@index")?.asInt())
@@ -138,49 +137,20 @@ class LøsningContentEnricherRiverTest {
 
         val lagretMelding = fetchMeldingData(meldingId)
         assertNotNull(lagretMelding, "Meldingen skal lagres")
-        assertJsonEquals(inputJson, lagretMelding, listOf(
-            "@id",
-            "@opprettet",
-            "system_read_count",
-            "system_participating_services",
-            "@forårsaket_av",
-        ))
-
-
-        /*
-
-        val lagretGrunnlagsdata = objectMapper.readTree(fetchGrunnlagsdata(meldingId, type = "forsikring"))
-        assertNotNull(lagretGrunnlagsdata, "Grunnlagsdata av type forsikring skal lagres")
-        val lagringsId = lagretGrunnlagsdata["@lagringsId"].asText()
-        "urn:grunnlagsdata:forsikring:<uuid goes here>"
-        assertEquals("urn:grunnlagsdata:forsikring:")
-        JSONAssert.assertEquals(
-            """
-                [
-                    {
-                        "forsikringstype": "ÅttiProsentFraDagEn",
-                        "premiegrunnlag": 12345,
-                        "startdato": "2024-01-01",
-                        "sluttdato": "2024-12-31",
-                        "@index": 0
-                    },
-                    {
-                        "forsikringstype": "HundreProsentFraDagSytten",
-                        "premiegrunnlag": 12345,
-                        "startdato": "2024-01-01",
-                        "sluttdato": "2024-12-31",
-                        "@index": 1
-                    }
-                ]
-                """.trimIndent(),
-            lagretGrunnlagsdata["kandidater"].toString(),
-            JSONCompareMode.STRICT
+        assertJsonEquals(
+            expectedJson = inputJson,
+            actualJson = lagretMelding,
+            bortsettFraProperties = listOf("system_participating_services", "system_read_count")
         )
+        assertEquals(1, countTableRows("melding"))
 
-         */
+        val lagretGrunnlagsdata = fetchGrunnlagsdata(uuid.toString(), "forsikring")
+        assertNotNull(lagretGrunnlagsdata, "Grunnlagsdata skal lagres")
+        assertJsonEquals(rapid.inspektør.message(0)["@løsning"]["SelvstendigForsikring"].toPrettyString(), lagretGrunnlagsdata)
+        assertEquals(1, countTableRows("grunnlagsdata"))
     }
 
-    private fun erGyldigLagringsId(lagringsId: String, forventetType: String) {
+    private fun validerGyldigLagringsIdOgGiUUID(lagringsId: String, forventetType: String): UUID {
         val splittetUrn = lagringsId.split(':')
         assertEquals(4, splittetUrn.size, "Feil antall deler i @lagringsId: $lagringsId")
 
@@ -188,7 +158,7 @@ class LøsningContentEnricherRiverTest {
         assertEquals("urn", urnKonstant)
         assertEquals("grunnlagsdata", namespace)
         assertEquals(forventetType, type)
-        assertDoesNotThrow("Siste del ($uuid) av @lagringsId \"$lagringsId\" kunne ikke tolkes som en UUID") {
+        return assertDoesNotThrow("Siste del ($uuid) av @lagringsId \"$lagringsId\" kunne ikke tolkes som en UUID") {
             UUID.fromString(uuid)
         }
     }
@@ -204,34 +174,66 @@ class LøsningContentEnricherRiverTest {
             }
         }
 
-    private fun fetchGrunnlagsdata(meldingId: UUID, type: String): String? =
+    private fun fetchGrunnlagsdata(id: String, type: String): String? =
         dataSource.connection.use { conn ->
             conn.prepareStatement(
-                "SELECT data FROM grunnlagsdata WHERE melding_ref = ? AND type = ?"
+                "SELECT data FROM grunnlagsdata WHERE id = ?::uuid AND type = ?"
             ).use { stmt ->
-                stmt.setObject(1, meldingId)
+                stmt.setString(1, id)
                 stmt.setString(2, type)
                 val rs = stmt.executeQuery()
                 if (rs.next()) rs.getString(1) else null
             }
         }
 
+    private fun countTableRows(table: String): Int =
+        dataSource.connection.use { conn ->
+            conn.prepareStatement("SELECT COUNT(*) FROM $table").use { stmt ->
+                stmt.executeQuery().apply { next() }.getInt(1)
+            }
+        }
+
+    private fun assertJsonEquals(
+        expectedJson: String,
+        actualJson: String,
+        bortsettFraProperties: List<String> = emptyList()
+    ) {
+        assertJsonEquals(
+            expectedJsonNode = objectMapper.readTree(expectedJson),
+            actualJsonNode = objectMapper.readTree(actualJson),
+            bortsettFraProperties = bortsettFraProperties
+        )
+    }
+
     private fun assertJsonEquals(
         expectedJsonNode: JsonNode,
         actualJsonNode: JsonNode,
         bortsettFraProperties: List<String> = emptyList()
     ) {
-        val expectedAsObjectNode =
-            expectedJsonNode.deepCopy<ObjectNode>().apply {
-                bortsettFraProperties.forEach { remove(it) }
-            }
-        val actualAsObjectNode =
-            actualJsonNode.deepCopy<ObjectNode>().apply {
-                bortsettFraProperties.forEach { remove(it) }
-            }
+        val expected = expectedJsonNode.deepSortedObjectNodeCopy().apply { bortsettFraProperties.forEach { remove(it) } }
+        val actual = actualJsonNode.deepSortedObjectNodeCopy().apply { bortsettFraProperties.forEach { remove(it) } }
         assertEquals(
-            objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(expectedAsObjectNode),
-            objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(actualAsObjectNode),
+            objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(expected),
+            objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(actual),
         )
     }
+
+    private fun JsonNode.sortedDeep(): JsonNode =
+        when (this) {
+            is ObjectNode ->
+                objectMapper.createObjectNode().also { sorted ->
+                    properties().asSequence()
+                        .sortedBy { (name, _) -> name }
+                        .forEach { (name, value) -> sorted.set<JsonNode>(name, value.sortedDeep()) }
+                }
+
+            is ArrayNode ->
+                objectMapper.createArrayNode().also { sortedArray ->
+                    forEach { sortedArray.add(it.sortedDeep()) }
+                }
+
+            else -> this.deepCopy()
+        }
+
+    private fun JsonNode.deepSortedObjectNodeCopy(): ObjectNode = sortedDeep() as ObjectNode
 }
