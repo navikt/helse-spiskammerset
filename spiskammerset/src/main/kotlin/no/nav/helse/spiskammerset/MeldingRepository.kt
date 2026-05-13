@@ -15,6 +15,7 @@ internal class MeldingRepository(private val dataSource: DataSource) {
                 stmt.setObject(1, dto.id)
                 stmt.setObject(2, dto.lagretTidspunkt.atOffset(ZoneOffset.UTC))
                 stmt.setString(3, dto.data)
+                stmt.executeUpdate()
             }
         }
     }

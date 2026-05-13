@@ -8,6 +8,8 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
+import java.time.Instant
+import java.util.*
 import javax.sql.DataSource
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -31,8 +33,18 @@ internal class LøsningContentEnricherRiver(
         }.register(this)
     }
 
+    private val meldingRepository = MeldingRepository(dataSource)
+
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         teamLogs.info("Mottok komplett løsning på behov:\n\t${packet.toJson()}")
+
+        meldingRepository.lagre(
+            MeldingDto(
+                id = UUID.fromString(packet["@id"].asText()),
+                lagretTidspunkt = Instant.now(),
+                data = packet.toJson()
+            )
+        )
 
         @OptIn(ExperimentalUuidApi::class)
         val uuid = Uuid.generateV7().toJavaUuid()

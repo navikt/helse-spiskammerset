@@ -16,6 +16,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertDoesNotThrow
+import org.skyscreamer.jsonassert.JSONAssert
+import org.skyscreamer.jsonassert.JSONCompareMode
 import org.testcontainers.postgresql.PostgreSQLContainer
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -134,12 +136,18 @@ class LøsningContentEnricherRiverTest {
         // Sammenlikn resten av @løsning-JSON'en (utenom feltene vi har fjernet med .remove() over)
         assertJsonEquals(inputJsonNode["@løsning"], beriketMelding["@løsning"])
 
+        val lagretMelding = fetchMeldingData(meldingId)
+        assertNotNull(lagretMelding, "Meldingen skal lagres")
+        assertJsonEquals(inputJson, lagretMelding, listOf(
+            "@id",
+            "@opprettet",
+            "system_read_count",
+            "system_participating_services",
+            "@forårsaket_av",
+        ))
 
 
         /*
-        val lagretMelding = fetchMeldingData(meldingId)
-        assertNotNull(lagretMelding, "Meldingen skal lagres")
-        JSONAssert.assertEquals(inputJson, lagretMelding, JSONCompareMode.STRICT)
 
         val lagretGrunnlagsdata = objectMapper.readTree(fetchGrunnlagsdata(meldingId, type = "forsikring"))
         assertNotNull(lagretGrunnlagsdata, "Grunnlagsdata av type forsikring skal lagres")
