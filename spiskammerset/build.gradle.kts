@@ -28,6 +28,7 @@ dependencies {
     api(libs.flyway.database.postgresql)
     implementation(libs.hikaricp)
     implementation(libs.postgresql)
+    implementation(libs.kotliquery)
     implementation(libs.tbd.libs.sql.dsl)
 
     testImplementation(libs.junit.jupiter)

@@ -6,8 +6,10 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
-import org.intellij.lang.annotations.Language
 import javax.sql.DataSource
+import kotliquery.queryOf
+import kotliquery.sessionOf
+import org.intellij.lang.annotations.Language
 
 internal class SlettPersonRiver(
     rapidsConnection: RapidsConnection,
@@ -25,19 +27,14 @@ internal class SlettPersonRiver(
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         val personidentifikator = packet["fødselsnummer"].asText()
 
-        dataSource.connection.use { conn ->
-            conn.prepareStatement(
-                "DELETE FROM grunnlagsdata WHERE melding_ref IN (SELECT id FROM melding WHERE data->>'fødselsnummer' = ?)"
-            ).use { stmt ->
-                stmt.setString(1, personidentifikator)
-                stmt.execute()
-            }
-            conn.prepareStatement(
-                "DELETE FROM melding WHERE data->>'fødselsnummer' = ?"
-            ).use { stmt ->
-                stmt.setString(1, personidentifikator)
-                stmt.execute()
-            }
+        sessionOf(dataSource).use { session ->
+            @Language("SQL")
+            val slettGrunnlagsdata = "DELETE FROM grunnlagsdata WHERE melding_ref IN (SELECT id FROM melding WHERE data->>'fødselsnummer' = :fnr)"
+            @Language("SQL")
+            val slettMelding = "DELETE FROM melding WHERE data->>'fødselsnummer' = :fnr"
+
+            session.run(queryOf(slettGrunnlagsdata, mapOf("fnr" to personidentifikator)).asUpdate)
+            session.run(queryOf(slettMelding, mapOf("fnr" to personidentifikator)).asUpdate)
         }
 
         context.publish(personidentifikator, lagPersonSlettet(personidentifikator))

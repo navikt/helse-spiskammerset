@@ -4,6 +4,8 @@ import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import java.util.*
+import kotliquery.queryOf
+import kotliquery.sessionOf
 import org.flywaydb.core.Flyway
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -42,8 +44,8 @@ class SlettPersonRiverTest {
     @BeforeEach
     fun reset() {
         rapid.reset()
-        dataSource.connection.use { conn ->
-            conn.prepareStatement("TRUNCATE TABLE grunnlagsdata, melding").execute()
+        sessionOf(dataSource).use { session ->
+            session.run(queryOf("TRUNCATE TABLE grunnlagsdata, melding").asUpdate)
         }
     }
 
@@ -76,41 +78,39 @@ class SlettPersonRiverTest {
 
     private fun insertMeldingOgGrunnlagsdata(fødselsnummer: String) {
         val meldingId = UUID.randomUUID()
-        dataSource.connection.use { conn ->
-            conn.prepareStatement("INSERT INTO melding (id, data) VALUES (?, ?::jsonb)").use { stmt ->
-                stmt.setObject(1, meldingId)
-                stmt.setString(2, """{ "fødselsnummer": "$fødselsnummer" }""")
-                stmt.execute()
-            }
-            conn.prepareStatement("INSERT INTO grunnlagsdata (data, type, melding_ref) VALUES (?::jsonb, ?, ?)").use { stmt ->
-                stmt.setString(1, """{ "noe": "data" }""")
-                stmt.setString(2, "TestData")
-                stmt.setObject(3, meldingId)
-                stmt.execute()
-            }
+        sessionOf(dataSource).use { session ->
+            session.run(
+                queryOf(
+                    "INSERT INTO melding (id, data) VALUES (:id, :data::jsonb)",
+                    mapOf("id" to meldingId, "data" to """{ "fødselsnummer": "$fødselsnummer" }""")
+                ).asUpdate
+            )
+            session.run(
+                queryOf(
+                    "INSERT INTO grunnlagsdata (data, type, melding_ref) VALUES (:data::jsonb, :type, :melding_ref)",
+                    mapOf("data" to """{ "noe": "data" }""", "type" to "TestData", "melding_ref" to meldingId)
+                ).asUpdate
+            )
         }
     }
 
     private fun countMeldinger(fødselsnummer: String): Long =
-        dataSource.connection.use { conn ->
-            conn.prepareStatement(
-                "SELECT COUNT(*) FROM melding WHERE data->>'fødselsnummer' = ?"
-            ).use { stmt ->
-                stmt.setString(1, fødselsnummer)
-                stmt.executeQuery().apply { next() }.getLong(1)
-            }
+        sessionOf(dataSource).use { session ->
+            session.run(
+                queryOf(
+                    "SELECT COUNT(*) FROM melding WHERE data->>'fødselsnummer' = :fnr",
+                    mapOf("fnr" to fødselsnummer)
+                ).map { row -> row.long(1) }.asSingle
+            ) ?: 0L
         }
 
     private fun countGrunnlagsdata(fødselsnummer: String): Long =
-        dataSource.connection.use { conn ->
-            conn.prepareStatement(
-                "SELECT COUNT(*)" +
-                    " FROM grunnlagsdata, melding" +
-                    " WHERE grunnlagsdata.melding_ref=melding.id" +
-                    " AND melding.data->>'fødselsnummer' = ?"
-            ).use { stmt ->
-                stmt.setString(1, fødselsnummer)
-                stmt.executeQuery().apply { next() }.getLong(1)
-            }
+        sessionOf(dataSource).use { session ->
+            session.run(
+                queryOf(
+                    "SELECT COUNT(*) FROM grunnlagsdata, melding WHERE grunnlagsdata.melding_ref=melding.id AND melding.data->>'fødselsnummer' = :fnr",
+                    mapOf("fnr" to fødselsnummer)
+                ).map { row -> row.long(1) }.asSingle
+            ) ?: 0L
         }
 }

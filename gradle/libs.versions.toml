@@ -1,5 +1,6 @@
 [versions]
 kotlin = "2.3.0"
+kotliquery = "1.9.0"
 junit-jupiter = "5.12.1"
 tbd-libs = "2026.03.06-15.21-9a24b886"
 rapids-and-rivers = "2026011411051768385145.e8ebad1177b4"
@@ -27,6 +28,7 @@ tbd-libs-postgres-testdatabaser = { module = "com.github.navikt.tbd-libs:postgre
 tbd-libs-naisful-test-app = { module = "com.github.navikt.tbd-libs:naisful-test-app", version.ref = "tbd-libs" }
 tbd-libs-signed-jwt-issuer-test = { module = "com.github.navikt.tbd-libs:signed-jwt-issuer-test", version.ref = "tbd-libs" }
 
+kotliquery = { module = "com.github.seratch:kotliquery", version.ref = "kotliquery" }
 hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback-classic" }

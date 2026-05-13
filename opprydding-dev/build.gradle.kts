@@ -11,6 +11,7 @@ dependencies {
     implementation(libs.rapids.and.rivers)
     implementation(libs.hikaricp)
     implementation(libs.postgresql)
+    implementation(libs.kotliquery)
 
     testImplementation(project(":migreringer"))
     testImplementation(libs.testcontainers.postgres)

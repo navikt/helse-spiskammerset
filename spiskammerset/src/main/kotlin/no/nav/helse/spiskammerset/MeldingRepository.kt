@@ -1,22 +1,27 @@
 package no.nav.helse.spiskammerset
 
 import java.time.ZoneOffset
-import org.intellij.lang.annotations.Language
-import org.postgresql.util.PGobject
 import javax.sql.DataSource
+import kotliquery.queryOf
+import kotliquery.sessionOf
+import org.intellij.lang.annotations.Language
 
 internal class MeldingRepository(private val dataSource: DataSource) {
     fun lagre(dto: MeldingDto) {
         @Language("SQL")
-        val sql = "INSERT INTO melding (id, lagret_tidspunkt, data) VALUES (?, ?, ?::jsonb)"
+        val sql = "INSERT INTO melding (id, lagret_tidspunkt, data) VALUES (:id, :lagret_tidspunkt, :data::jsonb)"
 
-        dataSource.connection.use { conn ->
-            conn.prepareStatement(sql).use { stmt ->
-                stmt.setObject(1, dto.id)
-                stmt.setObject(2, dto.lagretTidspunkt.atOffset(ZoneOffset.UTC))
-                stmt.setString(3, dto.data)
-                stmt.executeUpdate()
-            }
+        sessionOf(dataSource).use { session ->
+            session.run(
+                queryOf(
+                    sql,
+                    mapOf(
+                        "id" to dto.id,
+                        "lagret_tidspunkt" to dto.lagretTidspunkt.atOffset(ZoneOffset.UTC),
+                        "data" to dto.data,
+                    )
+                ).asUpdate
+            )
         }
     }
 }

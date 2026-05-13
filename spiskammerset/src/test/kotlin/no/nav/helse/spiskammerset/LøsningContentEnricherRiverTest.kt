@@ -11,6 +11,8 @@ import com.zaxxer.hikari.HikariDataSource
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotliquery.queryOf
+import kotliquery.sessionOf
 import org.flywaydb.core.Flyway
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
@@ -51,8 +53,8 @@ class LøsningContentEnricherRiverTest {
     @BeforeEach
     fun reset() {
         rapid.reset()
-        dataSource.connection.use { conn ->
-            conn.prepareStatement("TRUNCATE TABLE grunnlagsdata, melding").execute()
+        sessionOf(dataSource).use { session ->
+            session.run(queryOf("TRUNCATE TABLE grunnlagsdata, melding").asUpdate)
         }
     }
 
@@ -164,33 +166,30 @@ class LøsningContentEnricherRiverTest {
     }
 
     private fun fetchMeldingData(meldingId: UUID): String? =
-        dataSource.connection.use { conn ->
-            conn.prepareStatement(
-                "SELECT data FROM melding WHERE id = ?"
-            ).use { stmt ->
-                stmt.setObject(1, meldingId)
-                val rs = stmt.executeQuery()
-                if (rs.next()) rs.getString(1) else null
-            }
+        sessionOf(dataSource).use { session ->
+            session.run(
+                queryOf(
+                    "SELECT data FROM melding WHERE id = :id",
+                    mapOf("id" to meldingId)
+                ).map { row -> row.string(1) }.asSingle
+            )
         }
 
     private fun fetchGrunnlagsdata(id: String, type: String): String? =
-        dataSource.connection.use { conn ->
-            conn.prepareStatement(
-                "SELECT data FROM grunnlagsdata WHERE id = ?::uuid AND type = ?"
-            ).use { stmt ->
-                stmt.setString(1, id)
-                stmt.setString(2, type)
-                val rs = stmt.executeQuery()
-                if (rs.next()) rs.getString(1) else null
-            }
+        sessionOf(dataSource).use { session ->
+            session.run(
+                queryOf(
+                    "SELECT data FROM grunnlagsdata WHERE id = :id::uuid AND type = :type",
+                    mapOf("id" to id, "type" to type)
+                ).map { row -> row.string(1) }.asSingle
+            )
         }
 
     private fun countTableRows(table: String): Int =
-        dataSource.connection.use { conn ->
-            conn.prepareStatement("SELECT COUNT(*) FROM $table").use { stmt ->
-                stmt.executeQuery().apply { next() }.getInt(1)
-            }
+        sessionOf(dataSource).use { session ->
+            session.run(
+                queryOf("SELECT COUNT(*) FROM $table").map { row -> row.int(1) }.asSingle
+            ) ?: 0
         }
 
     private fun assertJsonEquals(
