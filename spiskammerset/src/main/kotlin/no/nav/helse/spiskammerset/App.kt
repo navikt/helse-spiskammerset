@@ -48,7 +48,7 @@ fun main() {
             }
         }
     ).apply {
-        LøsningContentEnricherRiver(this, dataSource)
+        LøsningContentEnricherRiver(this, dataSource, RepositoryFactoryImpl())
     }.start()
 }
 

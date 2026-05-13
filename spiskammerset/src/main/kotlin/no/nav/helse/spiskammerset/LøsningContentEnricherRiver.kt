@@ -14,10 +14,12 @@ import javax.sql.DataSource
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 import kotlin.uuid.toJavaUuid
+import kotliquery.sessionOf
 
 internal class LøsningContentEnricherRiver(
     rapidsConnection: RapidsConnection,
-    private val dataSource: DataSource
+    private val dataSource: DataSource,
+    private val repositoryFactory: RepositoryFactory,
 ) : River.PacketListener {
     init {
         River(rapidsConnection).apply {
@@ -33,36 +35,53 @@ internal class LøsningContentEnricherRiver(
         }.register(this)
     }
 
-    private val meldingRepository = MeldingRepository(dataSource)
-    private val grunnlagsdataRepository = GrunnlagsdataRepository(dataSource)
+    val grunnlagsdataTypePerBehov = mapOf(
+        "SelvstendigForsikring" to "forsikring"
+    )
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
-        teamLogs.info("Mottok komplett løsning på behov:\n\t${packet.toJson()}")
+        val inputMelding = packet.toJson()
+        teamLogs.info("Mottok komplett løsning på behov:\n\t$inputMelding")
 
         val meldingId = UUID.fromString(packet["@id"].asText())
-        meldingRepository.lagre(
-            MeldingDto(
-                id = meldingId,
-                lagretTidspunkt = Instant.now(),
-                data = packet.toJson()
-            )
-        )
 
-        @OptIn(ExperimentalUuidApi::class)
-        val uuid = Uuid.generateV7().toJavaUuid()
-        val beriketLøsning = packet["@løsning"]["SelvstendigForsikring"] as ObjectNode
-        beriketLøsning.put("@lagringsId", "urn:grunnlagsdata:forsikring:$uuid")
-        beriketLøsning["kandidater"].forEachIndexed { index, element -> (element as ObjectNode).put("@index", index) }
+        val grunnlagsdataDtoer = packet["@løsning"].properties()
+            .mapNotNull { (behovsnavn, løsning) -> grunnlagsdataTypePerBehov[behovsnavn]?.let { løsning to it } }
+            .map { (løsning, grunnlagsdataType) ->
+                @OptIn(ExperimentalUuidApi::class)
+                val uuid = Uuid.generateV7().toJavaUuid()
+                val beriketLøsning = løsning as ObjectNode
+                beriketLøsning.put("@lagringsId", "urn:grunnlagsdata:$grunnlagsdataType:$uuid")
+                beriketLøsning["kandidater"]?.forEachIndexed { index, element -> (element as ObjectNode).put("@index", index) }
 
-        grunnlagsdataRepository.lagre(
-            GrunnlagsdataDto(
-                id = uuid,
-                lagretTidspunkt = Instant.now(),
-                data = beriketLøsning.toPrettyString(),
-                type = "forsikring",
-                meldingRef = meldingId
-            )
-        )
+                GrunnlagsdataDto(
+                    id = uuid,
+                    lagretTidspunkt = Instant.now(),
+                    data = beriketLøsning.toPrettyString(),
+                    type = grunnlagsdataType,
+                    meldingRef = meldingId
+                )
+            }
+
+        if (grunnlagsdataDtoer.isNotEmpty()) {
+            sessionOf(dataSource).use { session ->
+                session.transaction { transactionalSession ->
+                    val meldingRepository = repositoryFactory.meldingRepository(transactionalSession)
+                    val grunnlagsdataRepository = repositoryFactory.grunnlagsdataRepository(transactionalSession)
+
+                    meldingRepository.lagre(
+                        MeldingDto(
+                            id = meldingId,
+                            lagretTidspunkt = Instant.now(),
+                            data = inputMelding
+                        )
+                    )
+                    grunnlagsdataDtoer.forEach { dto ->
+                        grunnlagsdataRepository.lagre(dto)
+                    }
+                }
+            }
+        }
 
         packet["@lagret"] = true
 
