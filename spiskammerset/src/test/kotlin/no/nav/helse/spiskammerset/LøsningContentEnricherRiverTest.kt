@@ -150,6 +150,8 @@ class LøsningContentEnricherRiverTest {
         assertNotNull(lagretGrunnlagsdata, "Grunnlagsdata skal lagres")
         assertJsonEquals(rapid.inspektør.message(0)["@løsning"]["SelvstendigForsikring"].toPrettyString(), lagretGrunnlagsdata)
         assertEquals(1, countTableRows("grunnlagsdata"))
+
+        assertEquals(meldingId.toString(), fetchMeldingRefForGrunnlagsdata(uuid.toString(), "forsikring"))
     }
 
     private fun validerGyldigLagringsIdOgGiUUID(lagringsId: String, forventetType: String): UUID {
@@ -180,6 +182,16 @@ class LøsningContentEnricherRiverTest {
             session.run(
                 queryOf(
                     "SELECT data FROM grunnlagsdata WHERE id = :id::uuid AND type = :type",
+                    mapOf("id" to id, "type" to type)
+                ).map { row -> row.string(1) }.asSingle
+            )
+        }
+
+    private fun fetchMeldingRefForGrunnlagsdata(id: String, type: String): String? =
+        sessionOf(dataSource).use { session ->
+            session.run(
+                queryOf(
+                    "SELECT melding_ref FROM grunnlagsdata WHERE id = :id::uuid AND type = :type",
                     mapOf("id" to id, "type" to type)
                 ).map { row -> row.string(1) }.asSingle
             )
